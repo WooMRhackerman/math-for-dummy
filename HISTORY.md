@@ -7,6 +7,24 @@
 
 ---
 
+### [2026-09-17] Full Elementary Curriculum Expansion (12 Semesters, 70 Units)
+- **Goal:** Complete comprehensive coverage of Korean elementary mathematics (2022 개정 초등 1학년~6학년 전 과정) across 12 distinct semester decks.
+- **Key Changes:**
+  - Designed and populated `src/data/curriculum-seed.json` with 70 flashcards spanning 70 distinct official units:
+    - Grade 1 (Sem 1 & 2): 10 units (Numbers to 100, shapes, clock/rules, basic addition/subtraction).
+    - Grade 2 (Sem 1 & 2): 12 units (3 & 4-digit numbers, shapes, measurement, multiplication tables, data tables).
+    - Grade 3 (Sem 1 & 2): 12 units (Fractions, decimals, plane figures, division, capacity & weight, circle).
+    - Grade 4 (Sem 1 & 2): 12 units (Large numbers, angles, figure transformations, bar/line graphs, polygons).
+    - Grade 5 (Sem 1 & 2): 12 units (Mixed operations, factors & multiples, fraction/decimal ops, perimeter & area).
+    - Grade 6 (Sem 1 & 2): 12 units (Fraction/decimal division, ratio & proportion, prism/cylinder volume & surface area).
+  - Maintained complete 5-domain mathematical balance: 수와 연산 (33), 도형 (15), 측정 (10), 자료와 가능성 (7), 규칙성 (5).
+  - Updated `src/components/DeckList.tsx` badge to display `{deck.grade}학년 {deck.semester}학기`.
+  - Built curriculum verification script `.agents/skills/1-curriculum-curator/scripts/verify-curriculum.ts`.
+  - Updated `tests/curriculum.test.ts` to assert 12 semester decks, 70 distinct units, 5-domain distribution, and KaTeX delimiter pairing.
+- **Verification:** All 14 automated unit tests passed (`vitest run`). Curriculum audit script verified 100% coverage. Production build (`npm run build`) succeeded without warnings or errors.
+
+---
+
 ### [2026-09-17] Android/iOS PWA Adaptive App Icon & Favicon
 - **Goal:** Replace placeholder plain blue icons with a custom, high-contrast, modern mathematical app icon for Android adaptive launchers and iOS touch homescreens.
 - **Key Changes:**

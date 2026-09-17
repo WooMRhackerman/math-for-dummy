@@ -31,12 +31,14 @@
 
 ---
 
-## 📚 Phase 2: Curriculum & Content Depth (Next Up)
-- [ ] **Full 68-Unit Elementary Expansion**
-  - [ ] Expand starter decks into full 1~6th grade unit coverage (12 semesters, 68 units).
-  - [ ] Grade 1~2: Number lines, basic addition/subtraction, time reading, multiplication table.
-  - [ ] Grade 3~4: Fractions, angles, plane shapes, large numbers, multi-digit operations.
-  - [ ] Grade 5~6: Divisors & multiples, fraction/decimal division, ratio & percentage, circle area, prism volume.
+## 📚 Phase 2: Curriculum & Content Depth
+- [x] **Full 70-Unit Elementary Expansion (12 Semesters, Grades 1~6)**
+  - [x] Expand starter decks into full 1~6th grade unit coverage (12 semester decks, 70 units).
+  - [x] Grade 1~2: Numbers to 100, addition/subtraction, shapes, time reading, multiplication tables (22 units).
+  - [x] Grade 3~4: Fractions & decimals, angles, plane shapes, multi-digit operations, bar & line graphs (24 units).
+  - [x] Grade 5~6: Divisors & multiples, fraction/decimal operations, ratio & percentage, circle area, prism volume (24 units).
+  - [x] Deck list badge updated to display `{deck.grade}학년 {deck.semester}학기`.
+  - [x] Verified 100% 5-domain coverage with KaTeX rendering integrity.
 - [ ] **Interactive Visual Diagrams**
   - [ ] SVG/Canvas dynamic geometric shapes for Geometry units (angle arcs, parallel lines, 3D nets).
   - [ ] Visual fraction bars and number lines for Numbers & Operations.

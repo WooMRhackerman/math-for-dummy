@@ -184,7 +184,7 @@ export const DeckList: React.FC<DeckListProps> = ({
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2">
                     <span className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-md">
-                      {deck.grade ? `${deck.grade}학년` : '공통'}
+                      {deck.grade ? `${deck.grade}학년 ${deck.semester ? `${deck.semester}학기` : ''}` : '공통'}
                     </span>
                     {dueCardsCount > 0 ? (
                       <span className="px-2.5 py-0.5 bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 text-[11px] font-bold rounded-full">
