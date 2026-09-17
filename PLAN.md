@@ -24,7 +24,9 @@
   - [x] Bilingual localization engine (`ko` primary, `en` toggle).
 - [x] **Cloud Sync & CI/CD**
   - [x] Serverless GitHub REST API sync engine (`data.json`) with fine-grained PAT support.
-  - [x] Automated GitHub Actions CI/CD to GitHub Pages (`.github/workflows/deploy.yml` with auto-enablement).
+  - [x] Dedicated CI workflow (`.github/workflows/ci.yml`) for pull requests (typecheck, tests, curriculum audit, build).
+  - [x] Automated CD pipeline (`.github/workflows/deploy.yml`) to GitHub Pages with auto-enablement and pre-deploy gates.
+  - [x] Root `README.md` with live CI/CD status badges and comprehensive architecture overview.
 - [x] **Design & Branding**
   - [x] Deep OLED Black Dark Theme (`#020617` canvas, `#0f172a` cards, `#f8fafc` KaTeX contrast).
   - [x] Custom adaptive PWA app icons for Android (maskable & standard) and iOS touch icons.

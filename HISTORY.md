@@ -7,6 +7,17 @@
 
 ---
 
+### [2026-09-17] Complete CI/CD Pipeline Automation & Repository Badges
+- **Goal:** Establish a complete two-tier CI/CD architecture with pull request automated quality gates, curriculum verification audits, enhanced GitHub Pages deployment, and root repository documentation.
+- **Key Changes:**
+  - Added `tsx` to `devDependencies` and npm scripts (`typecheck`: `tsc --noEmit`, `verify:curriculum`: `tsx verify-curriculum.ts`).
+  - Created `.github/workflows/ci.yml` running on pull requests and feature branches with 4 strict gates: typecheck, unit tests, curriculum audit, and production build.
+  - Enhanced `.github/workflows/deploy.yml` with pre-deployment quality gates (typecheck and curriculum verification before pages artifact upload).
+  - Created root `README.md` featuring CI & CD live status badges, 2022 curriculum summary, SM-2 SRS details, tech stack table, and local setup guide.
+- **Verification:** Ran `npm run typecheck`, `npm run verify:curriculum`, `npm test` (14 tests passed), and `npm run build` locally. Committed, pushed to `origin main`, and verified live deployment.
+
+---
+
 ### [2026-09-17] Full Elementary Curriculum Expansion (12 Semesters, 70 Units)
 - **Goal:** Complete comprehensive coverage of Korean elementary mathematics (2022 개정 초등 1학년~6학년 전 과정) across 12 distinct semester decks.
 - **Key Changes:**
