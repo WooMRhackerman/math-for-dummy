@@ -83,3 +83,18 @@ Specialized skills are located in `.agents/skills/` and dynamically activated ba
 3. [`.agents/skills/3-pwa-mobile-audit`](./.agents/skills/3-pwa-mobile-audit/SKILL.md): iPad/iPhone Safari standalone PWA validation, touch targets, and Service Worker caching.
 4. [`.agents/skills/4-srs-algorithm`](./.agents/skills/4-srs-algorithm/SKILL.md): Spaced repetition scheduling (SM-2 interval and ease factor algorithms).
 5. [`.agents/skills/5-i18n-typography`](./.agents/skills/5-i18n-typography/SKILL.md): Bilingual translations (`ko`/`en`), Hangul typography, and IME event handling.
+
+---
+
+## 6. Project Roadmap & History Tracking Protocol
+The project maintains two tracking documents in the root directory that must be updated as work progresses:
+
+1. **`PLAN.md` (Living Roadmap & Checklists):**
+   - Contains phased milestones, tasks with checkboxes (`- [x]`, `- [ ]`), and backlog ideas.
+   - The agent must consult `PLAN.md` to track progress and check off completed items.
+   - Adjust and expand tasks flexibly as user requirements evolve.
+
+2. **`HISTORY.md` (Rolling Work Log & Changelog):**
+   - Records completed tasks in reverse-chronological order (newest first) with task goals, changes, and verification results.
+   - **STRICT CONSTRAINT:** Keep `HISTORY.md` strictly under **300 lines**. When it exceeds 280 lines, prune the oldest entries at the bottom while keeping active milestone context.
+
