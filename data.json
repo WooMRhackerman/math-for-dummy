@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "lastModified": "2026-09-17T07:53:05.936Z",
+  "lastModified": "2026-09-17T09:08:56.952Z",
   "decks": [
     {
       "id": "deck-elem-1",
@@ -29,10 +29,10 @@
             "en": "It is $6$.\n\nNumber line: $1, 2, 3, 4, 5, \\mathbf{6}, 7, 8, 9$"
           },
           "review": {
-            "repetitions": 1,
-            "interval": 1,
-            "easeFactor": 2.6,
-            "dueDate": "2026-09-18"
+            "repetitions": 2,
+            "interval": 6,
+            "easeFactor": 2.7,
+            "dueDate": "2026-09-23"
           }
         },
         {
@@ -54,10 +54,10 @@
             "en": "It has flat faces and sharp corners, so it can be stacked without rolling away."
           },
           "review": {
-            "repetitions": 1,
-            "interval": 1,
-            "easeFactor": 2.6,
-            "dueDate": "2026-09-18"
+            "repetitions": 2,
+            "interval": 6,
+            "easeFactor": 2.7,
+            "dueDate": "2026-09-23"
           }
         },
         {
@@ -79,10 +79,10 @@
             "en": "$$3 + 4 = 7$$"
           },
           "review": {
-            "repetitions": 1,
-            "interval": 1,
-            "easeFactor": 2.6,
-            "dueDate": "2026-09-18"
+            "repetitions": 2,
+            "interval": 6,
+            "easeFactor": 2.7,
+            "dueDate": "2026-09-23"
           }
         },
         {
@@ -104,10 +104,10 @@
             "en": "It is $3$ o'clock."
           },
           "review": {
-            "repetitions": 1,
-            "interval": 1,
-            "easeFactor": 2.6,
-            "dueDate": "2026-09-18"
+            "repetitions": 2,
+            "interval": 6,
+            "easeFactor": 2.7,
+            "dueDate": "2026-09-23"
           }
         }
       ]
