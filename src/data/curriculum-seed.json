@@ -1,0 +1,338 @@
+{
+  "version": 1,
+  "lastModified": "2026-09-17T00:00:00.000Z",
+  "decks": [
+    {
+      "id": "deck-elem-1",
+      "name": {
+        "ko": "초등 1학년 수학 (기초 수와 모양)",
+        "en": "Elementary Grade 1 Math (Numbers & Shapes)"
+      },
+      "grade": 1,
+      "cards": [
+        {
+          "id": "c-1-1-1",
+          "grade": 1,
+          "semester": 1,
+          "unit": "1. 9까지의 수",
+          "domain": "수와 연산",
+          "tags": ["수의 순서", "수 세기"],
+          "front": {
+            "ko": "$1$부터 $9$까지의 수 중에서 $5$보다 $1$ 큰 수는 무엇인가요?",
+            "en": "Among numbers from $1$ to $9$, what number is $1$ greater than $5$?"
+          },
+          "back": {
+            "ko": "$6$ 입니다.\n\n수 배열: $1, 2, 3, 4, 5, \\mathbf{6}, 7, 8, 9$",
+            "en": "It is $6$.\n\nNumber line: $1, 2, 3, 4, 5, \\mathbf{6}, 7, 8, 9$"
+          },
+          "review": { "repetitions": 0, "interval": 0, "easeFactor": 2.5, "dueDate": "" }
+        },
+        {
+          "id": "c-1-1-2",
+          "grade": 1,
+          "semester": 1,
+          "unit": "2. 여러 가지 모양",
+          "domain": "도형",
+          "tags": ["입체 모양", "상자 모양"],
+          "front": {
+            "ko": "상자 모양(직육면체 모양)의 특징은 무엇인가요?",
+            "en": "What is the characteristic of a box shape (cuboid)?"
+          },
+          "back": {
+            "ko": "평평한 면이 있고, 뾰족한 모서리가 있어 잘 굴러가지 않고 쌓을 수 있습니다.",
+            "en": "It has flat faces and sharp corners, so it can be stacked without rolling away."
+          },
+          "review": { "repetitions": 0, "interval": 0, "easeFactor": 2.5, "dueDate": "" }
+        },
+        {
+          "id": "c-1-1-3",
+          "grade": 1,
+          "semester": 1,
+          "unit": "3. 덧셈과 뺄셈",
+          "domain": "수와 연산",
+          "tags": ["모으기와 가르기", "덧셈"],
+          "front": {
+            "ko": "$3$과 $4$를 모으면(더하면) 얼마가 되나요?",
+            "en": "What is $3 + 4$?"
+          },
+          "back": {
+            "ko": "$$3 + 4 = 7$$",
+            "en": "$$3 + 4 = 7$$"
+          },
+          "review": { "repetitions": 0, "interval": 0, "easeFactor": 2.5, "dueDate": "" }
+        },
+        {
+          "id": "c-1-2-1",
+          "grade": 1,
+          "semester": 2,
+          "unit": "5. 시계 보기와 규칙 찾기",
+          "domain": "측정",
+          "tags": ["시계", "정각"],
+          "front": {
+            "ko": "시계의 짧은바늘이 $3$을 가리키고 긴바늘이 $12$를 가리킬 때 시각은?",
+            "en": "When the short hand points to $3$ and the long hand points to $12$, what time is it?"
+          },
+          "back": {
+            "ko": "$3$시 (정각) 입니다.",
+            "en": "It is $3$ o'clock."
+          },
+          "review": { "repetitions": 0, "interval": 0, "easeFactor": 2.5, "dueDate": "" }
+        }
+      ]
+    },
+    {
+      "id": "deck-elem-2",
+      "name": {
+        "ko": "초등 2학년 수학 (세 자리 수 & 곱셈구구)",
+        "en": "Elementary Grade 2 Math (3-Digit Numbers & Multiplication Table)"
+      },
+      "grade": 2,
+      "cards": [
+        {
+          "id": "c-2-1-1",
+          "grade": 2,
+          "semester": 1,
+          "unit": "1. 세 자리 수",
+          "domain": "수와 연산",
+          "tags": ["자릿값", "세 자리 수"],
+          "front": {
+            "ko": "$100$이 $4$개, $10$이 $7$개, $1$이 $5$개인 수는 무엇인가요?",
+            "en": "What number is made of four $100$s, seven $10$s, and five $1$s?"
+          },
+          "back": {
+            "ko": "$475$ (사백칠십오) 입니다.",
+            "en": "It is $475$."
+          },
+          "review": { "repetitions": 0, "interval": 0, "easeFactor": 2.5, "dueDate": "" }
+        },
+        {
+          "id": "c-2-1-2",
+          "grade": 2,
+          "semester": 1,
+          "unit": "4. 길이 재기",
+          "domain": "측정",
+          "tags": ["길이 단위", "센티미터"],
+          "front": {
+            "ko": "길이의 단위 $1\\text{ cm}$는 어떻게 읽나요?",
+            "en": "How do you read the unit $1\\text{ cm}$?"
+          },
+          "back": {
+            "ko": "$1$ 센티미터라고 읽습니다.",
+            "en": "One centimeter."
+          },
+          "review": { "repetitions": 0, "interval": 0, "easeFactor": 2.5, "dueDate": "" }
+        },
+        {
+          "id": "c-2-2-1",
+          "grade": 2,
+          "semester": 2,
+          "unit": "2. 곱셈구구",
+          "domain": "수와 연산",
+          "tags": ["곱셈구구", "구구단"],
+          "front": {
+            "ko": "$7$씩 $8$ 묶음은 곱셈식으로 어떻게 나타내며 계산값은?",
+            "en": "Express $8$ groups of $7$ as a multiplication formula and solve."
+          },
+          "back": {
+            "ko": "$$7 \\times 8 = 56$$",
+            "en": "$$7 \\times 8 = 56$$"
+          },
+          "review": { "repetitions": 0, "interval": 0, "easeFactor": 2.5, "dueDate": "" }
+        }
+      ]
+    },
+    {
+      "id": "deck-elem-3",
+      "name": {
+        "ko": "초등 3학년 수학 (나눗셈 & 평면도형 & 분수 기초)",
+        "en": "Elementary Grade 3 Math (Division, Shapes & Basic Fractions)"
+      },
+      "grade": 3,
+      "cards": [
+        {
+          "id": "c-3-1-1",
+          "grade": 3,
+          "semester": 1,
+          "unit": "2. 평면도형",
+          "domain": "도형",
+          "tags": ["직각", "직사각형"],
+          "front": {
+            "ko": "직사각형(Rectangle)의 정의는 무엇인가요?",
+            "en": "What is the definition of a rectangle?"
+          },
+          "back": {
+            "ko": "네 각이 모두 직각($90^\\circ$)인 사각형입니다.",
+            "en": "A quadrilateral where all four angles are right angles ($90^\\circ$)."
+          },
+          "review": { "repetitions": 0, "interval": 0, "easeFactor": 2.5, "dueDate": "" }
+        },
+        {
+          "id": "c-3-1-2",
+          "grade": 3,
+          "semester": 1,
+          "unit": "6. 분수와 소수",
+          "domain": "수와 연산",
+          "tags": ["분수 개념", "단위분수"],
+          "front": {
+            "ko": "전체를 똑같이 $4$로 나눈 것 중의 $3$은 분수로 어떻게 나타내나요?",
+            "en": "How do you represent $3$ parts out of $4$ equal parts as a fraction?"
+          },
+          "back": {
+            "ko": "$$\\frac{3}{4}$$ (사분의 삼)\n\n분모는 $4$, 분자는 $3$입니다.",
+            "en": "$$\\frac{3}{4}$$\n\nDenominator is $4$, numerator is $3$."
+          },
+          "review": { "repetitions": 0, "interval": 0, "easeFactor": 2.5, "dueDate": "" }
+        },
+        {
+          "id": "c-3-2-1",
+          "grade": 3,
+          "semester": 2,
+          "unit": "3. 원",
+          "domain": "도형",
+          "tags": ["원의 중심", "반지름", "지름"],
+          "front": {
+            "ko": "원의 지름($d$)과 반지름($r$) 사이의 관계식은?",
+            "en": "What is the relationship between diameter ($d$) and radius ($r$) of a circle?"
+          },
+          "back": {
+            "ko": "$$\\text{지름} = \\text{반지름} \\times 2$$\n$$d = 2r$$",
+            "en": "$$\\text{Diameter} = 2 \\times \\text{Radius}$$\n$$d = 2r$$"
+          },
+          "review": { "repetitions": 0, "interval": 0, "easeFactor": 2.5, "dueDate": "" }
+        }
+      ]
+    },
+    {
+      "id": "deck-elem-4",
+      "name": {
+        "ko": "초등 4학년 수학 (큰 수 & 각도 & 다각형)",
+        "en": "Elementary Grade 4 Math (Large Numbers, Angles & Polygons)"
+      },
+      "grade": 4,
+      "cards": [
+        {
+          "id": "c-4-1-1",
+          "grade": 4,
+          "semester": 1,
+          "unit": "2. 각도",
+          "domain": "도형",
+          "tags": ["삼각형의 내각의 합", "각도"],
+          "front": {
+            "ko": "삼각형의 세 각의 크기의 합은 몇 도($^\\circ$)인가요?",
+            "en": "What is the sum of the interior angles of a triangle?"
+          },
+          "back": {
+            "ko": "$$180^\\circ$$\n\n직각 삼각형, 이등변 삼각형, 정삼각형 모두 항상 세 각의 합은 $180^\\circ$ 입니다.",
+            "en": "$$180^\\circ$$\n\nThe sum of angles in any triangle is always $180^\\circ$."
+          },
+          "review": { "repetitions": 0, "interval": 0, "easeFactor": 2.5, "dueDate": "" }
+        },
+        {
+          "id": "c-4-2-1",
+          "grade": 4,
+          "semester": 2,
+          "unit": "4. 사각형",
+          "domain": "도형",
+          "tags": ["평행사변형", "사다리꼴", "마름모"],
+          "front": {
+            "ko": "평행사변형(Parallelogram)의 성질 $2$가지는 무엇인가요?",
+            "en": "What are two key properties of a parallelogram?"
+          },
+          "back": {
+            "ko": "1. 마주 보는 두 쌍의 변이 서로 평행하고 길이가 같습니다.\n2. 마주 보는 두 각의 크기가 서로 같습니다.",
+            "en": "1. Opposite sides are parallel and equal in length.\n2. Opposite angles are equal."
+          },
+          "review": { "repetitions": 0, "interval": 0, "easeFactor": 2.5, "dueDate": "" }
+        }
+      ]
+    },
+    {
+      "id": "deck-elem-5",
+      "name": {
+        "ko": "초등 5학년 수학 (약수와 배수 & 분수 연산 & 넓이)",
+        "en": "Elementary Grade 5 Math (Divisors, Multiples, Fractions & Area)"
+      },
+      "grade": 5,
+      "cards": [
+        {
+          "id": "c-5-1-1",
+          "grade": 5,
+          "semester": 1,
+          "unit": "2. 약수와 배수",
+          "domain": "수와 연산",
+          "tags": ["약수", "배수", "최대공약수"],
+          "front": {
+            "ko": "두 수 $12$와 $18$의 최대공약수(GCD)는 얼마인가요?",
+            "en": "What is the Greatest Common Divisor (GCD) of $12$ and $18$?"
+          },
+          "back": {
+            "ko": "$6$ 입니다.\n\n$12$의 약수: $1, 2, 3, 4, 6, 12$\n$18$의 약수: $1, 2, 3, 6, 9, 18$\n공약수: $1, 2, 3, 6 \\rightarrow$ 최대공약수: $\\mathbf{6}$",
+            "en": "It is $6$.\n\nDivisors of 12: $1, 2, 3, 4, 6, 12$\nDivisors of 18: $1, 2, 3, 6, 9, 18$\nCommon divisors: $1, 2, 3, 6 \\rightarrow$ GCD: $\\mathbf{6}$"
+          },
+          "review": { "repetitions": 0, "interval": 0, "easeFactor": 2.5, "dueDate": "" }
+        },
+        {
+          "id": "c-5-1-2",
+          "grade": 5,
+          "semester": 1,
+          "unit": "6. 다각형의 둘레와 넓이",
+          "domain": "측정",
+          "tags": ["넓이 공식", "사다리꼴 넓이"],
+          "front": {
+            "ko": "사다리꼴의 넓이를 구하는 공식은?",
+            "en": "What is the formula for the area of a trapezoid?"
+          },
+          "back": {
+            "ko": "$$\\text{사다리꼴의 넓이} = (\\text{윗변} + \\text{아랫변}) \\times \\text{높이} \\div 2$$\n$$A = \\frac{(a + b) \\times h}{2}$$",
+            "en": "$$\\text{Area} = \\frac{(a + b) \\times h}{2}$$\nwhere $a, b$ are parallel sides, $h$ is height."
+          },
+          "review": { "repetitions": 0, "interval": 0, "easeFactor": 2.5, "dueDate": "" }
+        }
+      ]
+    },
+    {
+      "id": "deck-elem-6",
+      "name": {
+        "ko": "초등 6학년 수학 (비와 비율 & 입체도형 & 원의 넓이)",
+        "en": "Elementary Grade 6 Math (Ratio, Solid Figures & Circle Area)"
+      },
+      "grade": 6,
+      "cards": [
+        {
+          "id": "c-6-1-1",
+          "grade": 6,
+          "semester": 1,
+          "unit": "4. 비와 비율",
+          "domain": "규칙성",
+          "tags": ["비와 비율", "백분율"],
+          "front": {
+            "ko": "비 $3 : 5$에서 기준량과 비교하는 양을 구분하고, 비율을 분수로 나타내면?",
+            "en": "In the ratio $3 : 5$, identify the base and compared quantity, and express the ratio as a fraction."
+          },
+          "back": {
+            "ko": "- 기준량: $5$ (뒤의 수)\n- 비교하는 양: $3$ (앞의 수)\n- 비율: $$\\frac{3}{5} = 0.6 = 60\\%$$",
+            "en": "- Base quantity: $5$\n- Compared quantity: $3$\n- Ratio: $$\\frac{3}{5} = 0.6 = 60\\%$$"
+          },
+          "review": { "repetitions": 0, "interval": 0, "easeFactor": 2.5, "dueDate": "" }
+        },
+        {
+          "id": "c-6-2-1",
+          "grade": 6,
+          "semester": 2,
+          "unit": "5. 원의 넓이",
+          "domain": "측정",
+          "tags": ["원주", "원의 넓이", "원주율"],
+          "front": {
+            "ko": "반지름이 $r$인 원의 넓이 공식은?",
+            "en": "What is the formula for the area of a circle with radius $r$?"
+          },
+          "back": {
+            "ko": "$$\\text{원의 넓이} = \\text{반지름} \\times \\text{반지름} \\times \\text{원주율}(\\pi)$$\n$$A = \\pi r^2$$",
+            "en": "$$\\text{Area} = \\pi r^2$$"
+          },
+          "review": { "repetitions": 0, "interval": 0, "easeFactor": 2.5, "dueDate": "" }
+        }
+      ]
+    }
+  ]
+}

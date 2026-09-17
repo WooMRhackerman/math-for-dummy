@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+
+  /* 5-Domain Math Color Taxonomy */
+  --color-domain-numbers: #3B82F6;
+  --color-domain-geometry: #10B981;
+  --color-domain-measurement: #F59E0B;
+  --color-domain-patterns: #8B5CF6;
+  --color-domain-data: #F43F5E;
+
+  /* SRS Rating Colors */
+  --color-srs-again: #EF4444;
+  --color-srs-hard: #F97316;
+  --color-srs-good: #3B82F6;
+  --color-srs-easy: #10B981;
+}
+
+/* Base resets & typography */
+html, body {
+  font-family: var(--font-sans);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  word-break: keep-all;
+}
+
+/* Card 3D Flip Engine */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+/* KaTeX horizontal scroll safety */
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.5rem 0;
+  max-width: 100%;
+}
+
+/* Safe area insets */
+.pt-safe {
+  padding-top: max(1rem, env(safe-area-inset-top));
+}
+.pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
