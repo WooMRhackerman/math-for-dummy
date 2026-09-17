@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { AppData, Deck, Flashcard, GitHubConfig, Language, SyncStatus } from './types';
-import { loadAppData, saveAppData, loadGitHubConfig, saveGitHubConfig, loadLanguage, saveLanguage } from './services/storage';
+import { AppData, Deck, Flashcard, GitHubConfig, Language, SyncStatus, Theme } from './types';
+import { loadAppData, saveAppData, loadGitHubConfig, saveGitHubConfig, loadLanguage, saveLanguage, loadTheme, saveTheme } from './services/storage';
 import { pullFromGitHub, pushToGitHub, SyncConflictError } from './services/github-sync';
 import { calculateNextReview, isCardDue } from './services/srs';
 import seedData from './data/curriculum-seed.json';
@@ -20,6 +20,10 @@ export function App() {
     path: 'data.json'
   });
   const [language, setLanguage] = useState<Language>('ko');
+  const [theme, setTheme] = useState<Theme>('system');
+  const [isSystemDark, setIsSystemDark] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia('(prefers-color-scheme: dark)').matches : false
+  );
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
   const [syncMessage, setSyncMessage] = useState<string>('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -32,13 +36,30 @@ export function App() {
 
   const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language, key);
 
+  // Calculate whether dark mode is currently active
+  const isDark = theme === 'dark' || (theme === 'system' && isSystemDark);
+
+  // Synchronize .dark class on <html>
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', isDark);
+  }, [isDark]);
+
+  // Listen to OS dark mode changes
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const listener = (e: MediaQueryListEvent) => setIsSystemDark(e.matches);
+    media.addEventListener('change', listener);
+    return () => media.removeEventListener('change', listener);
+  }, []);
+
   // Initialize app state from IndexedDB
   useEffect(() => {
     async function init() {
-      const [savedData, savedConfig, savedLang] = await Promise.all([
+      const [savedData, savedConfig, savedLang, savedTheme] = await Promise.all([
         loadAppData(),
         loadGitHubConfig(),
-        loadLanguage()
+        loadLanguage(),
+        loadTheme()
       ]);
 
       if (savedData && savedData.decks && savedData.decks.length > 0) {
@@ -57,6 +78,10 @@ export function App() {
       if (savedLang) {
         setLanguage(savedLang);
       }
+
+      if (savedTheme) {
+        setTheme(savedTheme);
+      }
     }
 
     init();
@@ -72,6 +97,18 @@ export function App() {
   const handleSetLanguage = (lang: Language) => {
     setLanguage(lang);
     saveLanguage(lang);
+  };
+
+  // Theme switcher
+  const handleToggleTheme = () => {
+    const nextTheme: Theme = isDark ? 'light' : 'dark';
+    setTheme(nextTheme);
+    saveTheme(nextTheme);
+  };
+
+  const handleSetTheme = (newTheme: Theme) => {
+    setTheme(newTheme);
+    saveTheme(newTheme);
   };
 
   // Cloud Pull
@@ -198,11 +235,13 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 font-sans">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-sans transition-colors">
       <Header
         language={language}
         syncStatus={syncStatus}
+        isDark={isDark}
         onToggleLanguage={handleToggleLanguage}
+        onToggleTheme={handleToggleTheme}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onSync={handlePush}
       />
@@ -212,19 +251,19 @@ export function App() {
           isSessionComplete ? (
             /* Study Complete View */
             <div className="max-w-md mx-auto px-4 py-16 text-center space-y-6">
-              <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-sm animate-bounce">
+              <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto shadow-sm animate-bounce">
                 <CheckCircle2 className="w-10 h-10" />
               </div>
-              <h2 className="text-2xl font-black text-slate-900">
+              <h2 className="text-2xl font-black text-slate-900 dark:text-white">
                 {t('studyCompleted')}
               </h2>
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-slate-600 dark:text-slate-400">
                 {activeDeck.name[language] || activeDeck.name.ko}의 {studyCards.length}개 카드를 모두 학습했습니다.
               </p>
               <div className="flex gap-3 justify-center pt-2">
                 <button
                   onClick={() => handleStartStudy(activeDeck)}
-                  className="min-h-12 px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl text-sm flex items-center gap-2 transition"
+                  className="min-h-12 px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold rounded-xl text-sm flex items-center gap-2 transition"
                 >
                   <RotateCcw className="w-4 h-4" />
                   다시 학습하기
@@ -264,6 +303,7 @@ export function App() {
       <SettingsModal
         isOpen={isSettingsOpen}
         language={language}
+        theme={theme}
         config={githubConfig}
         syncStatus={syncStatus}
         syncMessage={syncMessage}
@@ -273,6 +313,7 @@ export function App() {
         onPull={handlePull}
         onImportCurriculum={handleImportCurriculum}
         onSetLanguage={handleSetLanguage}
+        onSetTheme={handleSetTheme}
       />
     </div>
   );

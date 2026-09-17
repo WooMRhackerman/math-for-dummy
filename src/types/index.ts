@@ -59,3 +59,5 @@ export interface GitHubConfig {
 export type SyncStatus = 'idle' | 'syncing' | 'success' | 'error' | 'conflict';
 
 export type Language = 'ko' | 'en';
+
+export type Theme = 'light' | 'dark' | 'system';

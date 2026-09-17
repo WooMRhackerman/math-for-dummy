@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { X, Key, UploadCloud, DownloadCloud, BookOpen, Check, AlertTriangle } from 'lucide-react';
-import { GitHubConfig, Language, SyncStatus } from '../types';
+import { X, Key, UploadCloud, DownloadCloud, BookOpen, Check, AlertTriangle, Sun, Moon, Monitor } from 'lucide-react';
+import { GitHubConfig, Language, SyncStatus, Theme } from '../types';
 import { getTranslation } from '../i18n';
 
 interface SettingsModalProps {
   isOpen: boolean;
   language: Language;
+  theme: Theme;
   config: GitHubConfig;
   syncStatus: SyncStatus;
   syncMessage: string;
@@ -15,11 +16,13 @@ interface SettingsModalProps {
   onPull: () => void;
   onImportCurriculum: () => void;
   onSetLanguage: (lang: Language) => void;
+  onSetTheme: (theme: Theme) => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
   language,
+  theme,
   config,
   syncStatus,
   syncMessage,
@@ -28,7 +31,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onPush,
   onPull,
   onImportCurriculum,
-  onSetLanguage
+  onSetLanguage,
+  onSetTheme
 }) => {
   const [token, setToken] = useState(config.token);
   const [owner, setOwner] = useState(config.owner);
@@ -54,16 +58,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 overflow-hidden max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/70 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden max-h-[90vh] flex flex-col transition-colors">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
             {t('settings')}
           </h2>
           <button
             onClick={onClose}
-            className="min-h-11 min-w-11 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition"
+            className="min-h-11 min-w-11 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition"
           >
             <X className="w-5 h-5" />
           </button>
@@ -76,8 +80,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div
               className={`p-3 rounded-xl text-sm flex items-start gap-2.5 ${
                 syncStatus === 'conflict' || syncStatus === 'error'
-                  ? 'bg-rose-50 text-rose-800 border border-rose-200'
-                  : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                  ? 'bg-rose-50 dark:bg-rose-950/50 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-900/60'
+                  : 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/60'
               }`}
             >
               <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
@@ -85,15 +89,60 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
           )}
 
+          {/* Theme Preference Selection */}
+          <div>
+            <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">
+              {t('themeLabel')}
+            </h3>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => onSetTheme('light')}
+                className={`min-h-11 py-2 px-2 rounded-xl text-xs font-semibold border flex items-center justify-center gap-1.5 transition ${
+                  theme === 'light'
+                    ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                    : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
+                }`}
+              >
+                <Sun className="w-4 h-4" />
+                <span>{t('themeLight')}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onSetTheme('dark')}
+                className={`min-h-11 py-2 px-2 rounded-xl text-xs font-semibold border flex items-center justify-center gap-1.5 transition ${
+                  theme === 'dark'
+                    ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                    : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
+                }`}
+              >
+                <Moon className="w-4 h-4" />
+                <span>{t('themeDark')}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onSetTheme('system')}
+                className={`min-h-11 py-2 px-2 rounded-xl text-xs font-semibold border flex items-center justify-center gap-1.5 transition ${
+                  theme === 'system'
+                    ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                    : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
+                }`}
+              >
+                <Monitor className="w-4 h-4" />
+                <span>{t('themeSystem')}</span>
+              </button>
+            </div>
+          </div>
+
           {/* GitHub Config Form */}
-          <form onSubmit={handleSave} className="space-y-4">
-            <h3 className="text-sm font-bold text-slate-800 flex items-center gap-1.5 uppercase tracking-wide">
-              <Key className="w-4 h-4 text-blue-600" />
+          <form onSubmit={handleSave} className="space-y-4 pt-2 border-t border-slate-200 dark:border-slate-800">
+            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5 uppercase tracking-wide">
+              <Key className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               {t('githubSync')}
             </h3>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 {t('tokenLabel')}
               </label>
               <input
@@ -101,16 +150,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
                 placeholder="github_pat_..."
-                className="w-full min-h-11 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                className="w-full min-h-11 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
               />
-              <p className="text-[11px] text-slate-500 mt-1 leading-normal">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-normal">
                 {t('tokenHelp')}
               </p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   GitHub ID (Owner)
                 </label>
                 <input
@@ -118,11 +167,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   value={owner}
                   onChange={(e) => setOwner(e.target.value)}
                   placeholder="username"
-                  className="w-full min-h-11 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full min-h-11 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   Repo Name
                 </label>
                 <input
@@ -130,13 +179,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   value={repo}
                   onChange={(e) => setRepo(e.target.value)}
                   placeholder="math-study-data"
-                  className="w-full min-h-11 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full min-h-11 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 {t('pathLabel')}
               </label>
               <input
@@ -144,13 +193,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 value={path}
                 onChange={(e) => setPath(e.target.value)}
                 placeholder="data.json"
-                className="w-full min-h-11 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                className="w-full min-h-11 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full min-h-11 bg-slate-900 text-white font-semibold rounded-lg text-sm hover:bg-slate-800 transition flex items-center justify-center gap-2"
+              className="w-full min-h-11 bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 text-white font-semibold rounded-lg text-sm transition flex items-center justify-center gap-2"
             >
               {savedSuccess ? <Check className="w-4 h-4 text-emerald-400" /> : null}
               {savedSuccess ? 'Saved!' : t('saveSettings')}
@@ -158,8 +207,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </form>
 
           {/* Sync Actions */}
-          <div className="pt-2 border-t border-slate-200">
-            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">
+          <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
+            <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">
               Cloud Operations
             </h3>
             <div className="grid grid-cols-2 gap-3">
@@ -167,7 +216,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 type="button"
                 onClick={onPush}
                 disabled={!token || syncStatus === 'syncing'}
-                className="min-h-11 px-3 py-2 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition disabled:opacity-50"
+                className="min-h-11 px-3 py-2 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition disabled:opacity-50"
               >
                 <UploadCloud className="w-4 h-4" />
                 {t('pushCloud')}
@@ -177,7 +226,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 type="button"
                 onClick={onPull}
                 disabled={!token || syncStatus === 'syncing'}
-                className="min-h-11 px-3 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition disabled:opacity-50"
+                className="min-h-11 px-3 py-2 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition disabled:opacity-50"
               >
                 <DownloadCloud className="w-4 h-4" />
                 {t('pullCloud')}
@@ -186,8 +235,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
 
           {/* Language Selection */}
-          <div className="pt-2 border-t border-slate-200">
-            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">
+          <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
+            <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">
               {t('languageLabel')}
             </h3>
             <div className="flex gap-2">
@@ -197,7 +246,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 className={`flex-1 min-h-11 py-2 rounded-lg text-sm font-semibold border transition ${
                   language === 'ko'
                     ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                    : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
                 }`}
               >
                 한국어 (Korean)
@@ -208,7 +257,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 className={`flex-1 min-h-11 py-2 rounded-lg text-sm font-semibold border transition ${
                   language === 'en'
                     ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                    : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
                 }`}
               >
                 English
@@ -217,16 +266,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
 
           {/* Curriculum Reset / Import */}
-          <div className="pt-2 border-t border-slate-200">
-            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">
+          <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
+            <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">
               Curriculum Data
             </h3>
             <button
               type="button"
               onClick={onImportCurriculum}
-              className="w-full min-h-11 px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition"
+              className="w-full min-h-11 px-4 py-2 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition"
             >
-              <BookOpen className="w-4 h-4 text-blue-600" />
+              <BookOpen className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               {t('importCurriculum')}
             </button>
           </div>

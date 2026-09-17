@@ -78,3 +78,18 @@ The 4 review rating buttons provide clear, tactile chromatic feedback:
   - Card front and back must use `backface-visibility: hidden;`.
 - **Zero Layout Shifts:**
   - The study card container must have a defined minimum height (e.g. `min-h-[320px]` on mobile, `min-h-[400px]` on tablet/desktop) so that flipping the card or rendering KaTeX equations does not cause sudden jumping or layout jitter.
+
+---
+
+## 6. Dark & OLED Black Theme Guidelines
+
+- **Canvas & Card Contrast:**
+  - **Background Canvas:** `bg-slate-950` (`#020617`) for battery efficiency on OLED/iPad and zero glare.
+  - **Card Surfaces:** `bg-slate-900` (`#0f172a`) with subtle `border-slate-800` borders.
+  - **Card Back (Flipped):** Pure dark `bg-black` (`#000000`) with emerald answer badge.
+- **KaTeX Equations in Dark Mode:**
+  - KaTeX math formulas, fractions, and radicals MUST render in `#f8fafc` with high contrast against dark backgrounds.
+- **Domain Badges (Dark Mode):**
+  - Use high-contrast deep pastel badges (`dark:bg-*-950/80 dark:text-*-300 dark:border-*-800`).
+- **SRS Buttons (Dark Mode):**
+  - Tinted glow buttons (`dark:bg-*-950/40 dark:border-*-900/60 dark:text-*-400`) to preserve color meaning without blinding nighttime users.

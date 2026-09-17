@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
 
@@ -43,12 +45,26 @@ html, body {
   transform: rotateY(180deg);
 }
 
-/* KaTeX horizontal scroll safety */
+/* KaTeX horizontal scroll safety & dark mode */
 .katex-display {
   overflow-x: auto;
   overflow-y: hidden;
   padding: 0.5rem 0;
   max-width: 100%;
+}
+
+.dark .katex {
+  color: #f8fafc;
+}
+
+.dark .katex .frac-line {
+  border-bottom-color: #f8fafc !important;
+}
+
+/* Dark mode base body */
+html.dark {
+  background-color: #020617;
+  color-scheme: dark;
 }
 
 /* Safe area insets */

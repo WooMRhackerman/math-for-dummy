@@ -40,5 +40,9 @@ export const ko = {
   domainGeometry: "도형",
   domainMeasurement: "측정",
   domainPatterns: "규칙성",
-  domainData: "자료와 가능성"
+  domainData: "자료와 가능성",
+  themeLabel: "화면 테마 (Theme)",
+  themeLight: "라이트 모드",
+  themeDark: "다크 모드 (블랙)",
+  themeSystem: "시스템 설정"
 };

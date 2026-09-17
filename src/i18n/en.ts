@@ -40,5 +40,9 @@ export const en = {
   domainGeometry: "Geometry",
   domainMeasurement: "Measurement",
   domainPatterns: "Patterns & Relationships",
-  domainData: "Data & Probability"
+  domainData: "Data & Probability",
+  themeLabel: "Display Theme",
+  themeLight: "Light Mode",
+  themeDark: "Dark Mode (Black)",
+  themeSystem: "System"
 };

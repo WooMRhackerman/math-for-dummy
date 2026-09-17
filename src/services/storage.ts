@@ -1,9 +1,10 @@
 import { get, set } from 'idb-keyval';
-import { AppData, GitHubConfig, Language } from '../types';
+import { AppData, GitHubConfig, Language, Theme } from '../types';
 
 const APP_DATA_KEY = 'math_for_dummy_data';
 const GITHUB_CONFIG_KEY = 'math_for_dummy_gh_config';
 const LANGUAGE_KEY = 'math_for_dummy_language';
+const THEME_KEY = 'math_for_dummy_theme';
 
 export async function loadAppData(): Promise<AppData | null> {
   try {
@@ -60,5 +61,22 @@ export async function saveLanguage(lang: Language): Promise<void> {
     await set(LANGUAGE_KEY, lang);
   } catch (err) {
     console.error('Failed to save Language preference:', err);
+  }
+}
+
+export async function loadTheme(): Promise<Theme> {
+  try {
+    const theme = await get<Theme>(THEME_KEY);
+    return theme || 'system';
+  } catch {
+    return 'system';
+  }
+}
+
+export async function saveTheme(theme: Theme): Promise<void> {
+  try {
+    await set(THEME_KEY, theme);
+  } catch (err) {
+    console.error('Failed to save Theme preference:', err);
   }
 }
