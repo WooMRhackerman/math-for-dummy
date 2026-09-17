@@ -65,12 +65,16 @@
 ---
 
 ## 🔄 Phase 4: Sync & Multi-Device Reliability
+- [x] **Google Cloud / Drive Sync Transition (1-Click Frictionless Sync)**
+  - [x] Implemented Google Drive AppData API (`appDataFolder`) integration using Google Identity Services (GIS).
+  - [x] Designed modular `SyncManager` supporting Google Drive (primary), GitHub PAT (secondary), and Local.
+  - [x] Connected user card in Settings with avatar, name, email, and 1-click disconnect.
+  - [x] One-click JSON backup export (`exportAsJSON`) and import/restore.
 - [ ] **Advanced Cloud Sync**
-  - [ ] Visual Conflict Resolver: When 409 conflict occurs, show side-by-side diff of local vs cloud data.
+  - [ ] Visual Conflict Resolver: When conflict occurs, show side-by-side diff of local vs cloud data.
   - [ ] Offline Mutation Queue: Queue card reviews offline and auto-sync when network reconnects.
   - [ ] Auto-sync on app open and review session complete.
 - [ ] **Backup & Data Portability**
-  - [ ] One-click JSON backup export and import.
   - [ ] Anki export/import (`.tsv` or basic format compatibility).
   - [ ] Automatic timestamped revision snapshots before remote overwrites.
 

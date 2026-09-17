@@ -46,7 +46,7 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={onSync}
             disabled={syncStatus === 'syncing'}
-            title={t('githubSync')}
+            title={t('googleSync')}
             className="min-h-11 min-w-11 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-900 flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 transition disabled:opacity-50"
           >
             {syncStatus === 'syncing' && <RefreshCw className="w-4 h-4 animate-spin text-blue-600 dark:text-blue-400" />}

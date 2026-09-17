@@ -4,7 +4,7 @@
 **Math For Dummy** is a lightweight, zero-server, offline-first Progressive Web App (PWA) designed for learning Korean elementary mathematics (2022 개정 초등 1학년~6학년 전 과정).
 
 - **Primary Persona:** Personal study tool used across Desktop (Chrome/Edge), iPad (Safari touch), and Mobile (iOS/Android).
-- **Core Architecture:** Client-side Single Page App (SPA) hosted on **GitHub Pages**, persisting data locally via **IndexedDB**, and syncing across devices using the **GitHub REST API** (`data.json` stored in a designated repository).
+- **Core Architecture:** Client-side Single Page App (SPA) hosted on **GitHub Pages**, persisting data locally via **IndexedDB**, and syncing across devices seamlessly using **Google Drive AppData API** (with secondary GitHub REST API & local JSON backup support).
 - **Language Default:** **Korean (한국어)** is the primary/default language, with an **English** toggle.
 
 ---

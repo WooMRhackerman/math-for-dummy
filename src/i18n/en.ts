@@ -44,5 +44,18 @@ export const en = {
   themeLabel: "Display Theme",
   themeLight: "Light Mode",
   themeDark: "Dark Mode (Black)",
-  themeSystem: "System"
+  themeSystem: "System",
+  syncProvider: "Sync Method",
+  googleSync: "Google Drive Sync (Recommended)",
+  googleSyncDesc: "Syncs your study progress directly to your personal Google Drive hidden app data folder without any backend server.",
+  signInWithGoogle: "Sign in with Google",
+  connectedAs: "Connected Account",
+  disconnect: "Disconnect",
+  syncNow: "Sync Now",
+  autoSync: "Auto-sync on session completion",
+  lastSynced: "Last Synced",
+  advancedSettings: "Advanced Settings (GitHub & Local File Backup)",
+  exportJson: "Download JSON Backup",
+  importJson: "Restore from JSON Backup",
+  localBackup: "Local File Backup"
 };

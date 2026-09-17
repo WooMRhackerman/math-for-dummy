@@ -1,7 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
-import { AppData, Deck, Flashcard, GitHubConfig, Language, SyncStatus, Theme } from './types';
-import { loadAppData, saveAppData, loadGitHubConfig, saveGitHubConfig, loadLanguage, saveLanguage, loadTheme, saveTheme } from './services/storage';
+import { AppData, Deck, Flashcard, GitHubConfig, GoogleDriveConfig, Language, SyncProviderType, SyncStatus, Theme } from './types';
+import { 
+  loadAppData, saveAppData, loadGitHubConfig, saveGitHubConfig, 
+  loadGoogleConfig, saveGoogleConfig, clearGoogleConfig,
+  loadActiveSyncProvider, saveActiveSyncProvider,
+  loadLanguage, saveLanguage, loadTheme, saveTheme 
+} from './services/storage';
 import { pullFromGitHub, pushToGitHub, SyncConflictError } from './services/github-sync';
+import { 
+  requestGoogleAccessToken, fetchGoogleUserInfo, 
+  pullFromGoogleDrive, pushToGoogleDrive 
+} from './services/google-drive-sync';
+import { SyncManager } from './services/sync-manager';
 import { calculateNextReview, isCardDue } from './services/srs';
 import seedData from './data/curriculum-seed.json';
 import { Header } from './components/Header';
@@ -13,6 +23,8 @@ import { CheckCircle2, RotateCcw, ArrowLeft } from 'lucide-react';
 
 export function App() {
   const [data, setData] = useState<AppData | null>(null);
+  const [activeProvider, setActiveProvider] = useState<SyncProviderType>('google-drive');
+  const [googleConfig, setGoogleConfig] = useState<GoogleDriveConfig | null>(null);
   const [githubConfig, setGithubConfig] = useState<GitHubConfig>({
     token: '',
     owner: '',
@@ -55,9 +67,11 @@ export function App() {
   // Initialize app state from IndexedDB
   useEffect(() => {
     async function init() {
-      const [savedData, savedConfig, savedLang, savedTheme] = await Promise.all([
+      const [savedData, savedConfig, savedGoogle, savedProvider, savedLang, savedTheme] = await Promise.all([
         loadAppData(),
         loadGitHubConfig(),
+        loadGoogleConfig(),
+        loadActiveSyncProvider(),
         loadLanguage(),
         loadTheme()
       ]);
@@ -73,6 +87,14 @@ export function App() {
 
       if (savedConfig) {
         setGithubConfig(savedConfig);
+      }
+
+      if (savedGoogle) {
+        setGoogleConfig(savedGoogle);
+      }
+
+      if (savedProvider) {
+        setActiveProvider(savedProvider);
       }
 
       if (savedLang) {
@@ -111,66 +133,223 @@ export function App() {
     saveTheme(newTheme);
   };
 
-  // Cloud Pull
-  const handlePull = useCallback(async () => {
-    if (!githubConfig.token || !githubConfig.owner || !githubConfig.repo) {
-      setIsSettingsOpen(true);
-      return;
-    }
+  const syncManager = new SyncManager({
+    provider: activeProvider,
+    googleConfig,
+    githubConfig
+  });
 
+  // Google Sign-In & Connect
+  const handleConnectGoogle = async () => {
     try {
       setSyncStatus('syncing');
-      setSyncMessage(t('syncing'));
-      const { data: remoteData, sha } = await pullFromGitHub(githubConfig);
+      setSyncMessage('Google 계정 인증 중...');
+      const tokenResult = await requestGoogleAccessToken();
+      const userInfo = await fetchGoogleUserInfo(tokenResult.accessToken);
 
-      setData(remoteData);
-      await saveAppData(remoteData);
+      const newGoogleConfig: GoogleDriveConfig = {
+        accessToken: tokenResult.accessToken,
+        expiresAt: tokenResult.expiresAt,
+        userInfo
+      };
 
-      const updatedConfig = { ...githubConfig, lastKnownSha: sha };
-      setGithubConfig(updatedConfig);
-      await saveGitHubConfig(updatedConfig);
+      setGoogleConfig(newGoogleConfig);
+      await saveGoogleConfig(newGoogleConfig);
+      setActiveProvider('google-drive');
+      await saveActiveSyncProvider('google-drive');
 
-      setSyncStatus('success');
-      setSyncMessage(t('syncSuccess'));
-      setTimeout(() => setSyncStatus('idle'), 3000);
+      // Attempt to pull existing data or push current data
+      try {
+        const pullRes = await pullFromGoogleDrive(newGoogleConfig);
+        setData(pullRes.data);
+        await saveAppData(pullRes.data);
+        newGoogleConfig.fileId = pullRes.fileId;
+        await saveGoogleConfig(newGoogleConfig);
+        setSyncStatus('success');
+        setSyncMessage(`Google 드라이브 동기화 완료 (${userInfo.name})`);
+      } catch (pullErr: unknown) {
+        // If file not found on drive, push local data
+        if (data) {
+          const pushRes = await pushToGoogleDrive(newGoogleConfig, data);
+          newGoogleConfig.fileId = pushRes.fileId;
+          await saveGoogleConfig(newGoogleConfig);
+          setSyncStatus('success');
+          setSyncMessage(`Google 드라이브에 학습 데이터 생성 완료 (${userInfo.name})`);
+        }
+      }
+      setTimeout(() => setSyncStatus('idle'), 3500);
     } catch (err: unknown) {
       console.error(err);
       setSyncStatus('error');
-      const msg = err instanceof Error ? err.message : String(err);
-      setSyncMessage(msg === 'FILE_NOT_FOUND' ? 'GitHub에 파일이 없습니다. Push를 먼저 실행하세요.' : t('syncError'));
+      setSyncMessage(err instanceof Error ? err.message : 'Google 인증 실패');
     }
-  }, [githubConfig, t]);
+  };
 
-  // Cloud Push
-  const handlePush = useCallback(async () => {
-    if (!githubConfig.token || !githubConfig.owner || !githubConfig.repo || !data) {
-      setIsSettingsOpen(true);
+  // Disconnect Google
+  const handleDisconnectGoogle = async () => {
+    setGoogleConfig(null);
+    await clearGoogleConfig();
+    setActiveProvider('local');
+    await saveActiveSyncProvider('local');
+    setSyncStatus('idle');
+    setSyncMessage('Google 계정 연동이 해제되었습니다.');
+    setTimeout(() => setSyncMessage(''), 3000);
+  };
+
+  // Export JSON file backup
+  const handleExportJSON = () => {
+    if (!data) return;
+    syncManager.exportAsJSON(data);
+  };
+
+  // Import JSON file backup
+  const handleImportJSON = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const text = e.target?.result as string;
+        const parsed: AppData = JSON.parse(text);
+        if (!parsed.decks || !Array.isArray(parsed.decks)) {
+          throw new Error('올바른 데이터 형식이 아닙니다.');
+        }
+        setData(parsed);
+        await saveAppData(parsed);
+        setSyncStatus('success');
+        setSyncMessage('JSON 백업 데이터를 성공적으로 복원했습니다.');
+        setTimeout(() => setSyncStatus('idle'), 3000);
+      } catch (err) {
+        setSyncStatus('error');
+        setSyncMessage('JSON 파일 복원 실패: ' + (err instanceof Error ? err.message : '잘못된 파일'));
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  // Switch Active Provider
+  const handleSetProvider = async (provider: SyncProviderType) => {
+    setActiveProvider(provider);
+    await saveActiveSyncProvider(provider);
+  };
+
+  // Cloud Pull
+  const handlePull = useCallback(async () => {
+    if (activeProvider === 'google-drive') {
+      if (!googleConfig || Date.now() > googleConfig.expiresAt) {
+        await handleConnectGoogle();
+        return;
+      }
+
+      try {
+        setSyncStatus('syncing');
+        setSyncMessage(t('syncing'));
+        const res = await pullFromGoogleDrive(googleConfig);
+        setData(res.data);
+        await saveAppData(res.data);
+        if (res.fileId) {
+          const updated = { ...googleConfig, fileId: res.fileId };
+          setGoogleConfig(updated);
+          await saveGoogleConfig(updated);
+        }
+        setSyncStatus('success');
+        setSyncMessage(t('syncSuccess'));
+        setTimeout(() => setSyncStatus('idle'), 3000);
+      } catch (err: unknown) {
+        console.error(err);
+        setSyncStatus('error');
+        setSyncMessage(err instanceof Error ? err.message : t('syncError'));
+      }
       return;
     }
 
-    try {
-      setSyncStatus('syncing');
-      setSyncMessage(t('syncing'));
-      const { sha } = await pushToGitHub(githubConfig, data);
+    if (activeProvider === 'github') {
+      if (!githubConfig.token || !githubConfig.owner || !githubConfig.repo) {
+        setIsSettingsOpen(true);
+        return;
+      }
 
-      const updatedConfig = { ...githubConfig, lastKnownSha: sha };
-      setGithubConfig(updatedConfig);
-      await saveGitHubConfig(updatedConfig);
+      try {
+        setSyncStatus('syncing');
+        setSyncMessage(t('syncing'));
+        const { data: remoteData, sha } = await pullFromGitHub(githubConfig);
 
-      setSyncStatus('success');
-      setSyncMessage(t('syncSuccess'));
-      setTimeout(() => setSyncStatus('idle'), 3000);
-    } catch (err: unknown) {
-      console.error(err);
-      if (err instanceof SyncConflictError) {
-        setSyncStatus('conflict');
-        setSyncMessage(t('syncConflict'));
-      } else {
+        setData(remoteData);
+        await saveAppData(remoteData);
+
+        const updatedConfig = { ...githubConfig, lastKnownSha: sha };
+        setGithubConfig(updatedConfig);
+        await saveGitHubConfig(updatedConfig);
+
+        setSyncStatus('success');
+        setSyncMessage(t('syncSuccess'));
+        setTimeout(() => setSyncStatus('idle'), 3000);
+      } catch (err: unknown) {
+        console.error(err);
         setSyncStatus('error');
-        setSyncMessage(t('syncError'));
+        const msg = err instanceof Error ? err.message : String(err);
+        setSyncMessage(msg === 'FILE_NOT_FOUND' ? 'GitHub에 파일이 없습니다. Push를 먼저 실행하세요.' : t('syncError'));
       }
     }
-  }, [githubConfig, data, t]);
+  }, [activeProvider, googleConfig, githubConfig, t]);
+
+  // Cloud Push
+  const handlePush = useCallback(async () => {
+    if (!data) return;
+
+    if (activeProvider === 'google-drive') {
+      if (!googleConfig || Date.now() > googleConfig.expiresAt) {
+        await handleConnectGoogle();
+        return;
+      }
+
+      try {
+        setSyncStatus('syncing');
+        setSyncMessage(t('syncing'));
+        const res = await pushToGoogleDrive(googleConfig, data);
+        const updated = { ...googleConfig, fileId: res.fileId };
+        setGoogleConfig(updated);
+        await saveGoogleConfig(updated);
+
+        setSyncStatus('success');
+        setSyncMessage(t('syncSuccess'));
+        setTimeout(() => setSyncStatus('idle'), 3000);
+      } catch (err: unknown) {
+        console.error(err);
+        setSyncStatus('error');
+        setSyncMessage(err instanceof Error ? err.message : t('syncError'));
+      }
+      return;
+    }
+
+    if (activeProvider === 'github') {
+      if (!githubConfig.token || !githubConfig.owner || !githubConfig.repo) {
+        setIsSettingsOpen(true);
+        return;
+      }
+
+      try {
+        setSyncStatus('syncing');
+        setSyncMessage(t('syncing'));
+        const { sha } = await pushToGitHub(githubConfig, data);
+
+        const updatedConfig = { ...githubConfig, lastKnownSha: sha };
+        setGithubConfig(updatedConfig);
+        await saveGitHubConfig(updatedConfig);
+
+        setSyncStatus('success');
+        setSyncMessage(t('syncSuccess'));
+        setTimeout(() => setSyncStatus('idle'), 3000);
+      } catch (err: unknown) {
+        console.error(err);
+        if (err instanceof SyncConflictError) {
+          setSyncStatus('conflict');
+          setSyncMessage(t('syncConflict'));
+        } else {
+          setSyncStatus('error');
+          setSyncMessage(t('syncError'));
+        }
+      }
+    }
+  }, [activeProvider, googleConfig, githubConfig, data, t]);
 
   // Save Settings from modal
   const handleSaveConfig = async (newConfig: GitHubConfig) => {
@@ -305,15 +484,22 @@ export function App() {
         language={language}
         theme={theme}
         config={githubConfig}
+        googleConfig={googleConfig}
+        activeProvider={activeProvider}
         syncStatus={syncStatus}
         syncMessage={syncMessage}
         onClose={() => setIsSettingsOpen(false)}
         onSaveConfig={handleSaveConfig}
+        onConnectGoogle={handleConnectGoogle}
+        onDisconnectGoogle={handleDisconnectGoogle}
         onPush={handlePush}
         onPull={handlePull}
+        onExportJSON={handleExportJSON}
+        onImportJSON={handleImportJSON}
         onImportCurriculum={handleImportCurriculum}
         onSetLanguage={handleSetLanguage}
         onSetTheme={handleSetTheme}
+        onSetProvider={handleSetProvider}
       />
     </div>
   );

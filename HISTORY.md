@@ -7,6 +7,20 @@
 
 ---
 
+### [2026-09-18] Google Cloud (Google Drive AppData API) Sync Transition
+- **Goal:** Migrate progress data management from cumbersome GitHub PAT tokens to frictionless 1-click Google Drive synchronization with modular provider support.
+- **Key Changes:**
+  - Built `src/services/google-drive-sync.ts` integrating Google Identity Services (GIS) OAuth 2.0 token client and Google Drive v3 REST API targeting the hidden, isolated `appDataFolder`.
+  - Built `src/services/sync-manager.ts` creating a pluggable provider pattern (`google-drive` primary, `github` secondary, and `local`).
+  - Added IndexedDB storage methods in `src/services/storage.ts` for Google OAuth sessions and active sync provider persistence.
+  - Redesigned `src/components/SettingsModal.tsx` to feature a 1-click "Google 계정으로 동기화" button, connected profile card (avatar, name, email, disconnect), and expandable accordion for advanced GitHub & local JSON backup.
+  - Added JSON backup export and import/restore handlers.
+  - Updated bilingual dictionaries (`src/i18n/ko.ts`, `src/i18n/en.ts`) with Google Cloud sync strings.
+  - Added `tests/google-drive-sync.test.ts` (7 tests) and `tests/sync-manager.test.ts` (3 tests).
+- **Verification:** All 24 unit tests passed (`vitest run`). `npm run typecheck`, `npm run verify:curriculum`, and `npm run build` succeeded without errors.
+
+---
+
 ### [2026-09-17] Complete CI/CD Pipeline Automation & Repository Badges
 - **Goal:** Establish a complete two-tier CI/CD architecture with pull request automated quality gates, curriculum verification audits, enhanced GitHub Pages deployment, and root repository documentation.
 - **Key Changes:**

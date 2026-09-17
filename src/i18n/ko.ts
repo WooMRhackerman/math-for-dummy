@@ -44,5 +44,18 @@ export const ko = {
   themeLabel: "화면 테마 (Theme)",
   themeLight: "라이트 모드",
   themeDark: "다크 모드 (블랙)",
-  themeSystem: "시스템 설정"
+  themeSystem: "시스템 설정",
+  syncProvider: "동기화 방식",
+  googleSync: "Google 드라이브 동기화 (권장)",
+  googleSyncDesc: "별도의 서버 없이 개인 Google 드라이브 앱 전용 폴더(appDataFolder)에 안전하게 학습 진도를 동기화합니다.",
+  signInWithGoogle: "Google 계정으로 동기화",
+  connectedAs: "연동된 계정",
+  disconnect: "연동 해제",
+  syncNow: "지금 동기화",
+  autoSync: "학습 완료 시 자동 동기화",
+  lastSynced: "최근 동기화",
+  advancedSettings: "고급 설정 (GitHub & 로컬 파일 백업)",
+  exportJson: "JSON 파일로 백업 다운로드",
+  importJson: "JSON 백업 파일 불러오기",
+  localBackup: "로컬 파일 백업"
 };
