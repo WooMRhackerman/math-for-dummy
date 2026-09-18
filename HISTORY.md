@@ -7,6 +7,20 @@
 
 ---
 
+### [2026-09-18] Direct Google Drive & OneDrive Native File Sync (Zero OAuth / Zero Token)
+- **Goal:** Completely eliminate the developer Google Cloud Console registration and OAuth 401 error barrier by enabling direct, real-time file synchronization directly inside the user's local Google Drive (G: drive) or OneDrive sync folder.
+- **Key Changes:**
+  - Built `src/services/cloud-drive-file.ts` leveraging the standard File System Access API (`showOpenFilePicker` and `showSaveFilePicker`).
+  - Added real-time auto-saving directly in `handleRateCard` in `src/App.tsx` streaming changes instantly to the connected cloud drive file upon every card rating.
+  - Implemented persistent handle storage via `idb-keyval` to keep file connections active across page reloads.
+  - Updated `src/services/sync-manager.ts` and `src/types/sync.ts` with `'cloud-file'` as primary sync provider.
+  - Revamped `src/components/SettingsModal.tsx` highlighting the Google Drive / OneDrive direct connection with live status indicator, file creation, reconnect, reload, and non-Chromium fallback notices.
+  - Installed `@types/wicg-file-system-access` for strict type safety.
+  - Updated `tests/sync-manager.test.ts` to assert `'cloud-file'` lifecycle and multi-provider transitions.
+- **Verification:** All 24 unit tests passed (`npm test`). `npm run typecheck` and `npm run verify:curriculum` passed with 0 errors. Production build (`npm run build`) succeeded with PWA service worker generation.
+
+---
+
 ### [2026-09-18] Google Cloud (Google Drive AppData API) Sync Transition
 - **Goal:** Migrate progress data management from cumbersome GitHub PAT tokens to frictionless 1-click Google Drive synchronization with modular provider support.
 - **Key Changes:**

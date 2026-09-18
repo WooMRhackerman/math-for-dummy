@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { 
   X, Key, UploadCloud, DownloadCloud, BookOpen, Check, AlertTriangle, 
-  Sun, Moon, Monitor, ChevronDown, ChevronUp, LogOut, FileDown, FileUp, Database,
-  HelpCircle, ExternalLink
+  Sun, Moon, Monitor, ChevronDown, ChevronUp, FileDown, FileUp, Database,
+  HelpCircle, ExternalLink, FolderSync, HardDrive, RefreshCw, PlusCircle
 } from 'lucide-react';
 import { GitHubConfig, GoogleDriveConfig, Language, SyncProviderType, SyncStatus, Theme } from '../types';
 import { getTranslation } from '../i18n';
@@ -15,9 +15,16 @@ interface SettingsModalProps {
   googleConfig: GoogleDriveConfig | null;
   googleClientId: string;
   activeProvider: SyncProviderType;
+  isCloudFileSupported: boolean;
+  connectedFileName: string;
   syncStatus: SyncStatus;
   syncMessage: string;
   onClose: () => void;
+  onConnectCloudFile: () => void;
+  onCreateCloudFile: () => void;
+  onDisconnectCloudFile: () => void;
+  onReloadCloudFile: () => void;
+  onSaveToCloudFile: () => void;
   onSaveConfig: (config: GitHubConfig) => void;
   onSaveGoogleClientId: (clientId: string) => void;
   onConnectGoogle: () => void;
@@ -40,9 +47,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   googleConfig,
   googleClientId,
   activeProvider,
+  isCloudFileSupported,
+  connectedFileName,
   syncStatus,
   syncMessage,
   onClose,
+  onConnectCloudFile,
+  onCreateCloudFile,
+  onDisconnectCloudFile,
+  onReloadCloudFile,
+  onSaveToCloudFile,
   onSaveConfig,
   onSaveGoogleClientId,
   onConnectGoogle,
@@ -71,6 +85,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language, key);
   const isGoogleConnected = !!(googleConfig && Date.now() < googleConfig.expiresAt);
+  const isFileConnected = activeProvider === 'cloud-file' && !!connectedFileName;
 
   const handleSaveClientId = (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,166 +146,128 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
           )}
 
-          {/* 🌟 1. Primary Cloud Sync: Google Drive */}
-          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 p-4 space-y-4">
+          {/* 🌟 1. Primary: Google Drive / OneDrive Direct File Sync */}
+          <div className="rounded-2xl border-2 border-blue-500/30 dark:border-blue-500/40 bg-blue-50/40 dark:bg-blue-950/20 p-4 space-y-4">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <Database className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                  {t('googleSync')}
+                  <FolderSync className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  {t('driveFileTitle')}
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                  {t('googleSyncDesc')}
+                <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                  {t('driveFileDesc')}
                 </p>
               </div>
               <span className={`px-2 py-0.5 text-[10px] font-extrabold rounded-full shrink-0 ${
-                isGoogleConnected 
+                isFileConnected 
                   ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300' 
                   : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
               }`}>
-                {isGoogleConnected ? '연결됨' : '미연결'}
+                {isFileConnected ? '연결됨' : '미연결'}
               </span>
             </div>
 
-            {/* Google Client ID Configuration */}
-            <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-700/60">
-              <div className="flex items-center justify-between">
-                <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-                  {t('googleClientIdLabel')}
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setShowGoogleGuide(!showGoogleGuide)}
-                  className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
-                >
-                  <HelpCircle className="w-3.5 h-3.5" />
-                  {t('googleSetupGuide')}
-                </button>
-              </div>
-
-              {/* 4-Step Visual Guide */}
-              {showGoogleGuide && (
-                <div className="p-3 bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 rounded-xl text-xs space-y-2 text-slate-700 dark:text-slate-300">
-                  <div className="font-bold text-blue-900 dark:text-blue-200 flex items-center gap-1.5">
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    Google Cloud Console 클라이언트 ID 발급 방법 (100% 무료):
-                  </div>
-                  <ol className="list-decimal list-inside space-y-1 text-[11px] leading-relaxed">
-                    <li><a href="https://console.cloud.google.com/" target="_blank" rel="noreferrer" className="text-blue-600 dark:text-blue-400 underline font-bold">Google Cloud Console</a> 접속 후 새 프로젝트 생성</li>
-                    <li><strong>API 및 서비스</strong> &gt; <strong>라이브러리</strong> &gt; <strong>Google Drive API</strong> 검색 후 [사용] 클릭</li>
-                    <li><strong>사용자 인증 정보</strong> &gt; <strong>OAuth 클라이언트 ID 만들기</strong>:
-                      <ul className="list-disc list-inside pl-3 pt-0.5 space-y-0.5 text-[10px] text-slate-600 dark:text-slate-400">
-                        <li>유형: <strong>웹 애플리케이션</strong></li>
-                        <li>승인된 JavaScript 출처: <code className="bg-white dark:bg-slate-900 px-1 py-0.5 rounded font-mono">https://woomrhackerman.github.io</code> 및 <code className="bg-white dark:bg-slate-900 px-1 py-0.5 rounded font-mono">http://localhost:5173</code></li>
-                      </ul>
-                    </li>
-                    <li>발급된 <strong>클라이언트 ID</strong>(<code className="font-mono text-[10px]">.apps.googleusercontent.com</code>)를 복사하여 아래에 붙여넣고 [ID 저장]을 누르세요!</li>
-                  </ol>
-                </div>
-              )}
-
-              <form onSubmit={handleSaveClientId} className="flex gap-2">
-                <input
-                  type="text"
-                  value={clientIdInput}
-                  onChange={(e) => setClientIdInput(e.target.value)}
-                  placeholder={t('googleClientIdPlaceholder')}
-                  className="flex-1 min-h-10 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <button
-                  type="submit"
-                  className="min-h-10 px-3 bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 text-white font-bold text-xs rounded-lg transition shrink-0 flex items-center gap-1"
-                >
-                  {savedClientIdSuccess ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : null}
-                  {savedClientIdSuccess ? '저장됨' : t('saveClientId')}
-                </button>
-              </form>
-            </div>
-
-            {isGoogleConnected ? (
-              <div className="bg-white dark:bg-slate-800 rounded-xl p-3 border border-slate-200 dark:border-slate-700 space-y-3">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5 overflow-hidden">
-                    {googleConfig?.userInfo?.picture ? (
-                      <img 
-                        src={googleConfig.userInfo.picture} 
-                        alt="Google avatar" 
-                        className="w-9 h-9 rounded-full border border-slate-200 dark:border-slate-600 shrink-0" 
-                      />
-                    ) : (
-                      <div className="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-600 dark:text-blue-300 flex items-center justify-center font-bold text-sm shrink-0">
-                        {googleConfig?.userInfo?.name?.[0] || 'G'}
+            {isCloudFileSupported ? (
+              isFileConnected ? (
+                <div className="bg-white dark:bg-slate-800 rounded-xl p-3.5 border border-slate-200 dark:border-slate-700 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5 overflow-hidden">
+                      <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                        <HardDrive className="w-5 h-5" />
                       </div>
-                    )}
-                    <div className="truncate">
-                      <div className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
-                        {googleConfig?.userInfo?.name || 'Google User'}
-                      </div>
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                        {googleConfig?.userInfo?.email || ''}
+                      <div className="truncate">
+                        <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                          {connectedFileName}
+                        </div>
+                        <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                          <Check className="w-3 h-3" />
+                          {t('autoSavedActive')}
+                        </div>
                       </div>
                     </div>
+
+                    <button
+                      type="button"
+                      onClick={onDisconnectCloudFile}
+                      className="min-h-9 px-2.5 py-1 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg transition shrink-0"
+                    >
+                      {t('disconnectFile')}
+                    </button>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={onDisconnectGoogle}
-                    className="min-h-9 px-2.5 py-1 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg transition flex items-center gap-1 shrink-0"
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                    {t('disconnect')}
-                  </button>
-                </div>
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={onSaveToCloudFile}
+                      disabled={syncStatus === 'syncing'}
+                      className="min-h-10 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm disabled:opacity-50"
+                    >
+                      <UploadCloud className="w-3.5 h-3.5" />
+                      <span>지금 저장 (Save)</span>
+                    </button>
 
+                    <button
+                      type="button"
+                      onClick={onReloadCloudFile}
+                      disabled={syncStatus === 'syncing'}
+                      className="min-h-10 px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition disabled:opacity-50"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      <span>{t('reloadFromFile')}</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={onConnectCloudFile}
+                      className="min-h-12 px-3 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-sm"
+                    >
+                      <HardDrive className="w-4 h-4" />
+                      <span>{t('connectExistingFile')}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={onCreateCloudFile}
+                      className="min-h-12 px-3 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold border border-slate-300 dark:border-slate-700 rounded-xl text-xs flex items-center justify-center gap-2 transition"
+                    >
+                      <PlusCircle className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                      <span>{t('createNewFile')}</span>
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 text-center leading-normal">
+                    💡 파일 탐색기에서 내 컴퓨터의 <strong>Google Drive(G: 드라이브)</strong> 또는 <strong>OneDrive</strong> 폴더를 선택하세요.
+                  </p>
+                </div>
+              )
+            ) : (
+              <div className="bg-amber-50 dark:bg-amber-950/40 p-3 rounded-xl border border-amber-200 dark:border-amber-900/60 text-xs text-amber-800 dark:text-amber-300 space-y-2">
+                <div className="font-bold flex items-center gap-1.5">
+                  <AlertTriangle className="w-4 h-4 text-amber-600" />
+                  {t('browserNotSupportedTitle')}
+                </div>
+                <p className="text-[11px] leading-relaxed">
+                  {t('browserNotSupportedDesc')}
+                </p>
                 <div className="grid grid-cols-2 gap-2 pt-1">
                   <button
                     type="button"
-                    onClick={onPush}
-                    disabled={syncStatus === 'syncing'}
-                    className="min-h-10 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm disabled:opacity-50"
+                    onClick={onExportJSON}
+                    className="min-h-9 px-3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-lg font-bold flex items-center justify-center gap-1"
                   >
-                    <UploadCloud className="w-3.5 h-3.5" />
-                    {t('pushCloud')}
+                    <FileDown className="w-3.5 h-3.5" />
+                    {t('exportJson')}
                   </button>
-
-                  <button
-                    type="button"
-                    onClick={onPull}
-                    disabled={syncStatus === 'syncing'}
-                    className="min-h-10 px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition disabled:opacity-50"
-                  >
-                    <DownloadCloud className="w-3.5 h-3.5" />
-                    {t('pullCloud')}
-                  </button>
+                  <label className="min-h-9 px-3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-lg font-bold flex items-center justify-center gap-1 cursor-pointer">
+                    <FileUp className="w-3.5 h-3.5" />
+                    <span>{t('importJson')}</span>
+                    <input type="file" accept=".json" onChange={handleFileInputChange} className="hidden" />
+                  </label>
                 </div>
               </div>
-            ) : (
-              <button
-                type="button"
-                onClick={onConnectGoogle}
-                disabled={syncStatus === 'syncing'}
-                className="w-full min-h-12 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-bold shadow-sm transition flex items-center justify-center gap-2.5"
-              >
-                <svg className="w-4 h-4" viewBox="0 0 24 24">
-                  <path
-                    fill="#4285F4"
-                    d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"
-                  />
-                  <path
-                    fill="#34A853"
-                    d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.35 24 12 24z"
-                  />
-                  <path
-                    fill="#FBBC05"
-                    d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
-                  />
-                  <path
-                    fill="#EA4335"
-                    d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.35 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
-                  />
-                </svg>
-                <span>{t('signInWithGoogle')}</span>
-              </button>
             )}
           </div>
 
@@ -385,7 +362,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </button>
           </div>
 
-          {/* ⚙️ Collapsible Advanced Settings (GitHub PAT & Local JSON Backup) */}
+          {/* ⚙️ Collapsible Advanced Settings (Local JSON Backup, Google OAuth, GitHub PAT) */}
           <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
             <button
               type="button"
@@ -425,6 +402,78 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       />
                     </label>
                   </div>
+                </div>
+
+                {/* Optional Google OAuth Client ID config (Advanced) */}
+                <div className="bg-slate-50 dark:bg-slate-800/60 rounded-xl p-3.5 border border-slate-200 dark:border-slate-700 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                      <Database className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                      Google Cloud OAuth 2.0 Web Login
+                    </h4>
+                    <button
+                      type="button"
+                      onClick={() => setShowGoogleGuide(!showGoogleGuide)}
+                      className="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                    >
+                      <HelpCircle className="w-3 h-3" />
+                      {t('googleSetupGuide')}
+                    </button>
+                  </div>
+
+                  {showGoogleGuide && (
+                    <div className="p-2.5 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 rounded-lg text-xs space-y-1.5 text-slate-700 dark:text-slate-300">
+                      <div className="font-bold text-blue-900 dark:text-blue-200 flex items-center gap-1">
+                        <ExternalLink className="w-3 h-3" />
+                        Google Cloud Console 클라이언트 ID 설정:
+                      </div>
+                      <ol className="list-decimal list-inside space-y-0.5 text-[10px] text-slate-600 dark:text-slate-400">
+                        <li><a href="https://console.cloud.google.com/" target="_blank" rel="noreferrer" className="text-blue-600 underline">Google Cloud Console</a>에서 프로젝트 생성</li>
+                        <li>Google Drive API 사용 설정</li>
+                        <li>OAuth 클라이언트 ID (웹 애플리케이션) 생성 후 아래 입력창에 저장</li>
+                      </ol>
+                    </div>
+                  )}
+
+                  <form onSubmit={handleSaveClientId} className="flex gap-2">
+                    <input
+                      type="text"
+                      value={clientIdInput}
+                      onChange={(e) => setClientIdInput(e.target.value)}
+                      placeholder="xxxx.apps.googleusercontent.com"
+                      className="flex-1 min-h-10 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button
+                      type="submit"
+                      className="min-h-10 px-3 bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 text-white font-bold text-xs rounded-lg transition shrink-0 flex items-center gap-1"
+                    >
+                      {savedClientIdSuccess ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : null}
+                      {savedClientIdSuccess ? '저장됨' : '저장'}
+                    </button>
+                  </form>
+
+                  {isGoogleConnected ? (
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">
+                        {googleConfig?.userInfo?.email} 연결됨
+                      </span>
+                      <button
+                        type="button"
+                        onClick={onDisconnectGoogle}
+                        className="text-xs text-rose-600 hover:underline"
+                      >
+                        연동 해제
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={onConnectGoogle}
+                      className="w-full min-h-10 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+                    >
+                      {t('signInWithGoogle')}
+                    </button>
+                  )}
                 </div>
 
                 {/* Legacy GitHub Sync Config */}
@@ -503,13 +552,35 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     />
                   </div>
 
-                  <button
-                    type="submit"
-                    className="w-full min-h-10 bg-slate-900 dark:bg-slate-700 hover:bg-slate-800 dark:hover:bg-slate-600 text-white font-semibold rounded-lg text-xs transition flex items-center justify-center gap-2"
-                  >
-                    {savedSuccess ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : null}
-                    {savedSuccess ? 'Saved!' : t('saveSettings')}
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      type="submit"
+                      className="flex-1 min-h-10 bg-slate-900 dark:bg-slate-700 hover:bg-slate-800 dark:hover:bg-slate-600 text-white font-semibold rounded-lg text-xs transition flex items-center justify-center gap-2"
+                    >
+                      {savedSuccess ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : null}
+                      {savedSuccess ? 'Saved!' : t('saveSettings')}
+                    </button>
+                    {activeProvider === 'github' && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={onPush}
+                          className="min-h-10 px-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs flex items-center gap-1 shrink-0"
+                        >
+                          <UploadCloud className="w-3.5 h-3.5" />
+                          Push
+                        </button>
+                        <button
+                          type="button"
+                          onClick={onPull}
+                          className="min-h-10 px-3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 font-bold rounded-lg text-xs flex items-center gap-1 shrink-0"
+                        >
+                          <DownloadCloud className="w-3.5 h-3.5" />
+                          Pull
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </form>
               </div>
             )}

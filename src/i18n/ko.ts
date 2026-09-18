@@ -62,5 +62,22 @@ export const ko = {
   googleClientIdPlaceholder: "xxxx.apps.googleusercontent.com",
   googleClientIdHelp: "Google Cloud Console에서 발급받은 웹 애플리케이션 클라이언트 ID를 입력하세요.",
   googleSetupGuide: "무료 2분 설정 가이드",
-  saveClientId: "ID 저장"
+  saveClientId: "ID 저장",
+  driveFileTitle: "Google Drive / OneDrive 클라우드 직접 연동",
+  driveFileDesc: "내 컴퓨터의 Google Drive(G: 드라이브) 또는 OneDrive 폴더 안의 파일을 연결하면, 학습할 때마다 실시간으로 클라우드에 자동 저장됩니다. (개발자 설정/토큰 0%)",
+  connectExistingFile: "기존 드라이브 파일 연결하기",
+  createNewFile: "새 클라우드 파일 생성하기",
+  connectedFile: "연결된 파일",
+  reloadFromFile: "파일에서 새로고침",
+  autoSavedActive: "클라우드 실시간 자동 저장 작동 중",
+  disconnectFile: "파일 연결 해제",
+  browserNotSupportedTitle: "파일 시스템 자동 저장 미지원 브라우저",
+  browserNotSupportedDesc: "Chrome, Edge 등 Chromium 브라우저에서 실시간 파일 자동 저장이 완벽 지원됩니다. 다른 브라우저에서는 아래의 파일 다운로드/불러오기를 이용해주세요.",
+  cloudFileConnecting: "클라우드 파일 연결 중...",
+  cloudFileConnected: "클라우드 파일이 연결되었습니다.",
+  cloudFileCreating: "새 클라우드 파일 생성 중...",
+  cloudFileCreated: "새 클라우드 파일이 생성되어 연결되었습니다.",
+  cloudFileDisconnected: "클라우드 파일 연결이 해제되었습니다.",
+  cloudFileReloaded: "클라우드 파일에서 최신 데이터를 불러왔습니다.",
+  cloudFileSaved: "클라우드 파일에 저장되었습니다."
 };

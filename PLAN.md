@@ -65,9 +65,15 @@
 ---
 
 ## 🔄 Phase 4: Sync & Multi-Device Reliability
+- [x] **Direct Google Drive / OneDrive Native File Sync (Zero-Token Option 2)**
+  - [x] Implemented `src/services/cloud-drive-file.ts` with File System Access API (`pickCloudDriveFile`, `createCloudDriveFile`, `readDataFromFileHandle`, `writeDataToFileHandle`).
+  - [x] Allows users to select or create a file directly in their local Google Drive (G: drive) or OneDrive sync folder.
+  - [x] Real-time background auto-saving on every flashcard review rating (`handleRateCard`) without requiring any developer console registration or API tokens.
+  - [x] Persistent `FileSystemFileHandle` storage in IndexedDB so cloud connection survives browser reloads.
+  - [x] Graceful detection and fallback guidance for non-Chromium browsers (Safari, Firefox).
 - [x] **Google Cloud / Drive Sync Transition (1-Click Frictionless Sync)**
   - [x] Implemented Google Drive AppData API (`appDataFolder`) integration using Google Identity Services (GIS).
-  - [x] Designed modular `SyncManager` supporting Google Drive (primary), GitHub PAT (secondary), and Local.
+  - [x] Designed modular `SyncManager` supporting Cloud File (primary), Google Drive (OAuth), GitHub PAT (secondary), and Local.
   - [x] Connected user card in Settings with avatar, name, email, and 1-click disconnect.
   - [x] One-click JSON backup export (`exportAsJSON`) and import/restore.
 - [ ] **Advanced Cloud Sync**

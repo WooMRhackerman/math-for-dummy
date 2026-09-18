@@ -62,5 +62,22 @@ export const en = {
   googleClientIdPlaceholder: "xxxx.apps.googleusercontent.com",
   googleClientIdHelp: "Enter the Web Application Client ID from Google Cloud Console.",
   googleSetupGuide: "Free 2-Min Setup Guide",
-  saveClientId: "Save ID"
+  saveClientId: "Save ID",
+  driveFileTitle: "Google Drive / OneDrive Direct Cloud Sync",
+  driveFileDesc: "Connect a file in your local Google Drive or OneDrive folder to auto-save in real time without any developer account or tokens.",
+  connectExistingFile: "Connect Existing Drive File",
+  createNewFile: "Create New Cloud File",
+  connectedFile: "Connected File",
+  reloadFromFile: "Reload from File",
+  autoSavedActive: "Real-time Cloud Auto-Sync Active",
+  disconnectFile: "Disconnect File",
+  browserNotSupportedTitle: "Direct File Sync Not Supported in this Browser",
+  browserNotSupportedDesc: "Direct file auto-saving is supported on Chrome, Edge, and Chromium browsers. On other browsers, please use backup export/import below.",
+  cloudFileConnecting: "Connecting to cloud file...",
+  cloudFileConnected: "Cloud file connected successfully.",
+  cloudFileCreating: "Creating new cloud file...",
+  cloudFileCreated: "New cloud file created and connected.",
+  cloudFileDisconnected: "Cloud file disconnected.",
+  cloudFileReloaded: "Reloaded latest data from cloud file.",
+  cloudFileSaved: "Saved successfully to cloud file."
 };

@@ -12,6 +12,16 @@ import {
   requestGoogleAccessToken, fetchGoogleUserInfo, 
   pullFromGoogleDrive, pushToGoogleDrive 
 } from './services/google-drive-sync';
+import {
+  isFileSystemAccessSupported,
+  loadCloudDriveFileHandle,
+  clearCloudDriveFileHandle,
+  loadCloudDriveFileName,
+  pickCloudDriveFile,
+  createCloudDriveFile,
+  readDataFromFileHandle,
+  writeDataToFileHandle
+} from './services/cloud-drive-file';
 import { SyncManager } from './services/sync-manager';
 import { calculateNextReview, isCardDue } from './services/srs';
 import seedData from './data/curriculum-seed.json';
@@ -24,7 +34,10 @@ import { CheckCircle2, RotateCcw, ArrowLeft } from 'lucide-react';
 
 export function App() {
   const [data, setData] = useState<AppData | null>(null);
-  const [activeProvider, setActiveProvider] = useState<SyncProviderType>('google-drive');
+  const [activeProvider, setActiveProvider] = useState<SyncProviderType>('cloud-file');
+  const [cloudFileHandle, setCloudFileHandle] = useState<FileSystemFileHandle | null>(null);
+  const [connectedFileName, setConnectedFileName] = useState<string>('');
+  const isCloudFileSupported = isFileSystemAccessSupported();
   const [googleConfig, setGoogleConfig] = useState<GoogleDriveConfig | null>(null);
   const [googleClientId, setGoogleClientId] = useState<string>('');
   const [githubConfig, setGithubConfig] = useState<GitHubConfig>({
@@ -69,11 +82,23 @@ export function App() {
   // Initialize app state from IndexedDB
   useEffect(() => {
     async function init() {
-      const [savedData, savedConfig, savedGoogle, savedClientId, savedProvider, savedLang, savedTheme] = await Promise.all([
+      const [
+        savedData, 
+        savedConfig, 
+        savedGoogle, 
+        savedClientId, 
+        savedHandle, 
+        savedFileName, 
+        savedProvider, 
+        savedLang, 
+        savedTheme
+      ] = await Promise.all([
         loadAppData(),
         loadGitHubConfig(),
         loadGoogleConfig(),
         loadGoogleClientId(),
+        loadCloudDriveFileHandle(),
+        loadCloudDriveFileName(),
         loadActiveSyncProvider(),
         loadLanguage(),
         loadTheme()
@@ -100,7 +125,11 @@ export function App() {
         setGoogleClientId(savedClientId);
       }
 
-      if (savedProvider) {
+      if (savedHandle) {
+        setCloudFileHandle(savedHandle);
+        setConnectedFileName(savedFileName || savedHandle.name);
+        setActiveProvider('cloud-file');
+      } else if (savedProvider) {
         setActiveProvider(savedProvider);
       }
 
@@ -142,9 +171,106 @@ export function App() {
 
   const syncManager = new SyncManager({
     provider: activeProvider,
+    cloudFileHandle,
+    cloudFileName: connectedFileName,
     googleConfig,
     githubConfig
   });
+
+  // Cloud Drive File Handlers (Google Drive / OneDrive direct sync)
+  const handleConnectCloudFile = async () => {
+    try {
+      setSyncStatus('syncing');
+      setSyncMessage(t('cloudFileConnecting'));
+      const { handle, data: fileData, fileName } = await pickCloudDriveFile();
+      setCloudFileHandle(handle);
+      setConnectedFileName(fileName);
+      setData(fileData);
+      await saveAppData(fileData);
+      setActiveProvider('cloud-file');
+      await saveActiveSyncProvider('cloud-file');
+      setSyncStatus('success');
+      setSyncMessage(t('cloudFileConnected'));
+      setTimeout(() => setSyncStatus('idle'), 3500);
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        setSyncStatus('idle');
+        return;
+      }
+      console.error(err);
+      setSyncStatus('error');
+      setSyncMessage(err instanceof Error ? err.message : t('syncError'));
+    }
+  };
+
+  const handleCreateCloudFile = async () => {
+    if (!data) return;
+    try {
+      setSyncStatus('syncing');
+      setSyncMessage(t('cloudFileCreating'));
+      const { handle, fileName } = await createCloudDriveFile(data);
+      setCloudFileHandle(handle);
+      setConnectedFileName(fileName);
+      setActiveProvider('cloud-file');
+      await saveActiveSyncProvider('cloud-file');
+      setSyncStatus('success');
+      setSyncMessage(t('cloudFileCreated'));
+      setTimeout(() => setSyncStatus('idle'), 3500);
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        setSyncStatus('idle');
+        return;
+      }
+      console.error(err);
+      setSyncStatus('error');
+      setSyncMessage(err instanceof Error ? err.message : t('syncError'));
+    }
+  };
+
+  const handleDisconnectCloudFile = async () => {
+    await clearCloudDriveFileHandle();
+    setCloudFileHandle(null);
+    setConnectedFileName('');
+    setActiveProvider('local');
+    await saveActiveSyncProvider('local');
+    setSyncStatus('idle');
+    setSyncMessage(t('cloudFileDisconnected'));
+    setTimeout(() => setSyncMessage(''), 3000);
+  };
+
+  const handleReloadCloudFile = async () => {
+    if (!cloudFileHandle) return;
+    try {
+      setSyncStatus('syncing');
+      setSyncMessage(t('syncing'));
+      const fileData = await readDataFromFileHandle(cloudFileHandle);
+      setData(fileData);
+      await saveAppData(fileData);
+      setSyncStatus('success');
+      setSyncMessage(t('cloudFileReloaded'));
+      setTimeout(() => setSyncStatus('idle'), 3000);
+    } catch (err: unknown) {
+      console.error(err);
+      setSyncStatus('error');
+      setSyncMessage(err instanceof Error ? err.message : t('syncError'));
+    }
+  };
+
+  const handleSaveToCloudFile = async () => {
+    if (!cloudFileHandle || !data) return;
+    try {
+      setSyncStatus('syncing');
+      setSyncMessage(t('syncing'));
+      await writeDataToFileHandle(cloudFileHandle, data);
+      setSyncStatus('success');
+      setSyncMessage(t('cloudFileSaved'));
+      setTimeout(() => setSyncStatus('idle'), 3000);
+    } catch (err: unknown) {
+      console.error(err);
+      setSyncStatus('error');
+      setSyncMessage(err instanceof Error ? err.message : t('syncError'));
+    }
+  };
 
   const handleSaveGoogleClientId = async (clientId: string) => {
     setGoogleClientId(clientId);
@@ -252,6 +378,28 @@ export function App() {
 
   // Cloud Pull
   const handlePull = useCallback(async () => {
+    if (activeProvider === 'cloud-file') {
+      if (!cloudFileHandle) {
+        setIsSettingsOpen(true);
+        return;
+      }
+      try {
+        setSyncStatus('syncing');
+        setSyncMessage(t('syncing'));
+        const fileData = await readDataFromFileHandle(cloudFileHandle);
+        setData(fileData);
+        await saveAppData(fileData);
+        setSyncStatus('success');
+        setSyncMessage(t('cloudFileReloaded'));
+        setTimeout(() => setSyncStatus('idle'), 3000);
+      } catch (err: unknown) {
+        console.error(err);
+        setSyncStatus('error');
+        setSyncMessage(err instanceof Error ? err.message : t('syncError'));
+      }
+      return;
+    }
+
     if (activeProvider === 'google-drive') {
       if (!googleConfig || Date.now() > googleConfig.expiresAt) {
         await handleConnectGoogle();
@@ -308,11 +456,31 @@ export function App() {
         setSyncMessage(msg === 'FILE_NOT_FOUND' ? 'GitHub에 파일이 없습니다. Push를 먼저 실행하세요.' : t('syncError'));
       }
     }
-  }, [activeProvider, googleConfig, githubConfig, t]);
+  }, [activeProvider, cloudFileHandle, googleConfig, githubConfig, t]);
 
   // Cloud Push
   const handlePush = useCallback(async () => {
     if (!data) return;
+
+    if (activeProvider === 'cloud-file') {
+      if (!cloudFileHandle) {
+        setIsSettingsOpen(true);
+        return;
+      }
+      try {
+        setSyncStatus('syncing');
+        setSyncMessage(t('syncing'));
+        await writeDataToFileHandle(cloudFileHandle, data);
+        setSyncStatus('success');
+        setSyncMessage(t('cloudFileSaved'));
+        setTimeout(() => setSyncStatus('idle'), 3000);
+      } catch (err: unknown) {
+        console.error(err);
+        setSyncStatus('error');
+        setSyncMessage(err instanceof Error ? err.message : t('syncError'));
+      }
+      return;
+    }
 
     if (activeProvider === 'google-drive') {
       if (!googleConfig || Date.now() > googleConfig.expiresAt) {
@@ -368,7 +536,7 @@ export function App() {
         }
       }
     }
-  }, [activeProvider, googleConfig, githubConfig, data, t]);
+  }, [activeProvider, cloudFileHandle, googleConfig, githubConfig, data, t]);
 
   // Save Settings from modal
   const handleSaveConfig = async (newConfig: GitHubConfig) => {
@@ -416,6 +584,13 @@ export function App() {
     setData(newData);
     await saveAppData(newData);
     setActiveDeck(updatedDeck);
+
+    // Real-time auto-save to connected cloud drive file if active
+    if (activeProvider === 'cloud-file' && cloudFileHandle) {
+      writeDataToFileHandle(cloudFileHandle, newData).catch((err) => {
+        console.warn('Real-time cloud file auto-save failed:', err);
+      });
+    }
 
     // Move to next card or complete
     if (currentCardIndex + 1 < studyCards.length) {
@@ -506,9 +681,16 @@ export function App() {
         googleConfig={googleConfig}
         googleClientId={googleClientId}
         activeProvider={activeProvider}
+        isCloudFileSupported={isCloudFileSupported}
+        connectedFileName={connectedFileName}
         syncStatus={syncStatus}
         syncMessage={syncMessage}
         onClose={() => setIsSettingsOpen(false)}
+        onConnectCloudFile={handleConnectCloudFile}
+        onCreateCloudFile={handleCreateCloudFile}
+        onDisconnectCloudFile={handleDisconnectCloudFile}
+        onReloadCloudFile={handleReloadCloudFile}
+        onSaveToCloudFile={handleSaveToCloudFile}
         onSaveConfig={handleSaveConfig}
         onSaveGoogleClientId={handleSaveGoogleClientId}
         onConnectGoogle={handleConnectGoogle}

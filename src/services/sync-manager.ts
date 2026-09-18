@@ -1,10 +1,13 @@
 import { AppData, GitHubConfig, GoogleDriveConfig, SyncProviderType, SyncResult, SyncStatus } from '../types';
 import { pullFromGoogleDrive, pushToGoogleDrive } from './google-drive-sync';
 import { pullFromGitHub, pushToGitHub } from './github-sync';
+import { readDataFromFileHandle, writeDataToFileHandle } from './cloud-drive-file';
 import { loadAppData, saveAppData } from './storage';
 
 export class SyncManager {
-  private activeProvider: SyncProviderType = 'google-drive';
+  private activeProvider: SyncProviderType = 'cloud-file';
+  private cloudFileHandle: FileSystemFileHandle | null = null;
+  private cloudFileName = '';
   private googleConfig: GoogleDriveConfig | null = null;
   private githubConfig: GitHubConfig = { token: '', owner: '', repo: '', path: 'data.json' };
   private status: SyncStatus = 'idle';
@@ -13,10 +16,14 @@ export class SyncManager {
 
   constructor(options?: {
     provider?: SyncProviderType;
+    cloudFileHandle?: FileSystemFileHandle | null;
+    cloudFileName?: string;
     googleConfig?: GoogleDriveConfig | null;
     githubConfig?: GitHubConfig;
   }) {
     if (options?.provider) this.activeProvider = options.provider;
+    if (options?.cloudFileHandle !== undefined) this.cloudFileHandle = options.cloudFileHandle;
+    if (options?.cloudFileName) this.cloudFileName = options.cloudFileName;
     if (options?.googleConfig !== undefined) this.googleConfig = options.googleConfig;
     if (options?.githubConfig) this.githubConfig = options.githubConfig;
   }
@@ -27,6 +34,18 @@ export class SyncManager {
 
   public getProvider(): SyncProviderType {
     return this.activeProvider;
+  }
+
+  public setCloudFile(handle: FileSystemFileHandle | null, name = '') {
+    this.cloudFileHandle = handle;
+    this.cloudFileName = name || handle?.name || '';
+  }
+
+  public getCloudFile(): { handle: FileSystemFileHandle | null; name: string } {
+    return {
+      handle: this.cloudFileHandle,
+      name: this.cloudFileName
+    };
   }
 
   public setGoogleConfig(config: GoogleDriveConfig | null) {
@@ -54,6 +73,9 @@ export class SyncManager {
   }
 
   public isConnected(): boolean {
+    if (this.activeProvider === 'cloud-file') {
+      return !!this.cloudFileHandle;
+    }
     if (this.activeProvider === 'google-drive') {
       return !!this.googleConfig && Date.now() < this.googleConfig.expiresAt;
     }
@@ -71,13 +93,31 @@ export class SyncManager {
     this.message = 'Pulling data...';
 
     try {
+      if (this.activeProvider === 'cloud-file') {
+        if (!this.cloudFileHandle) {
+          throw new Error('NO_CLOUD_FILE_CONNECTED');
+        }
+
+        const data = await readDataFromFileHandle(this.cloudFileHandle);
+        await saveAppData(data);
+
+        this.status = 'success';
+        this.message = `클라우드 드라이브(${this.cloudFileName || this.cloudFileHandle.name})에서 불러왔습니다.`;
+        this.lastSynced = new Date().toISOString();
+
+        return {
+          data,
+          source: 'cloud-file',
+          timestamp: this.lastSynced
+        };
+      }
+
       if (this.activeProvider === 'google-drive') {
         if (!this.googleConfig || Date.now() > this.googleConfig.expiresAt) {
           throw new Error('GOOGLE_AUTH_REQUIRED');
         }
 
         const res = await pullFromGoogleDrive(this.googleConfig);
-        // Save fileId back to config
         this.googleConfig.fileId = res.fileId;
         await saveAppData(res.data);
 
@@ -147,6 +187,20 @@ export class SyncManager {
     try {
       // Always persist locally first
       await saveAppData(data);
+
+      if (this.activeProvider === 'cloud-file') {
+        if (!this.cloudFileHandle) {
+          throw new Error('NO_CLOUD_FILE_CONNECTED');
+        }
+
+        await writeDataToFileHandle(this.cloudFileHandle, data);
+
+        this.status = 'success';
+        this.message = `클라우드 드라이브(${this.cloudFileName || this.cloudFileHandle.name})에 자동 저장되었습니다.`;
+        this.lastSynced = new Date().toISOString();
+
+        return {};
+      }
 
       if (this.activeProvider === 'google-drive') {
         if (!this.googleConfig || Date.now() > this.googleConfig.expiresAt) {

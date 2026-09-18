@@ -1,6 +1,6 @@
 import { AppData, GitHubConfig } from './index';
 
-export type SyncProviderType = 'google-drive' | 'github' | 'local';
+export type SyncProviderType = 'cloud-file' | 'google-drive' | 'github' | 'local';
 
 export interface GoogleUserInfo {
   id: string;
