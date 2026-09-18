@@ -228,3 +228,20 @@ export async function pushToSupabase(data: AppData): Promise<{ timestamp: string
 
   return { timestamp: now };
 }
+
+/**
+ * Listens for Supabase Auth state changes (e.g. when returning from email verification redirect).
+ */
+export function onSupabaseAuthStateChange(
+  callback: (user: SupabaseUser | null) => void
+) {
+  const client = getSupabaseClient();
+  const { data: { subscription } } = client.auth.onAuthStateChange((_event, session) => {
+    if (session && session.user) {
+      callback({ id: session.user.id, email: session.user.email || '' });
+    } else {
+      callback(null);
+    }
+  });
+  return subscription;
+}

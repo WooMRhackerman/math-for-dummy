@@ -29,7 +29,8 @@ import {
   signUpWithEmail,
   signOutSupabase,
   pullFromSupabase,
-  pushToSupabase
+  pushToSupabase,
+  onSupabaseAuthStateChange
 } from './services/supabase-sync';
 import { SyncManager } from './services/sync-manager';
 import { calculateNextReview, isCardDue } from './services/srs';
@@ -87,6 +88,34 @@ export function App() {
     const listener = (e: MediaQueryListEvent) => setIsSystemDark(e.matches);
     media.addEventListener('change', listener);
     return () => media.removeEventListener('change', listener);
+  }, []);
+
+  // Listen to Supabase Auth state changes (auto-login when redirected from email confirmation)
+  useEffect(() => {
+    const sub = onSupabaseAuthStateChange(async (user) => {
+      if (user) {
+        setSupabaseUser(user);
+        setActiveProvider('supabase');
+        await saveActiveSyncProvider('supabase');
+        // Clean URL hash after email verification redirect
+        if (typeof window !== 'undefined' && window.location.hash.includes('access_token')) {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+        try {
+          const res = await pullFromSupabase();
+          if (res && res.data) {
+            setData(res.data);
+            await saveAppData(res.data);
+          }
+        } catch {
+          // Keep local if no remote data yet
+        }
+      }
+    });
+
+    return () => {
+      sub.unsubscribe();
+    };
   }, []);
 
   // Initialize app state from IndexedDB
