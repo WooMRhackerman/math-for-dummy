@@ -79,5 +79,15 @@ export const en = {
   cloudFileCreated: "New cloud file created and connected.",
   cloudFileDisconnected: "Cloud file disconnected.",
   cloudFileReloaded: "Reloaded latest data from cloud file.",
-  cloudFileSaved: "Saved successfully to cloud file."
+  cloudFileSaved: "Saved successfully to cloud file.",
+  supabaseSyncTitle: "Supabase Real-time Cloud Sync",
+  supabaseSyncDesc: "Sign in with your account to auto-sync study progress in real time across all devices. (0% Google verification required)",
+  emailLabel: "Email",
+  passwordLabel: "Password",
+  signIn: "Sign In",
+  signUp: "Sign Up",
+  signOut: "Sign Out",
+  supabaseConnected: "Connected to Supabase",
+  supabaseConnecting: "Connecting to Cloud...",
+  supabaseDisconnected: "Signed out successfully."
 };

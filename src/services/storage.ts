@@ -1,7 +1,8 @@
 import { get, set, del } from 'idb-keyval';
-import { AppData, GitHubConfig, GoogleDriveConfig, Language, SyncProviderType, Theme } from '../types';
+import { AppData, GitHubConfig, GoogleDriveConfig, SupabaseConfig, Language, SyncProviderType, Theme } from '../types';
 
 const APP_DATA_KEY = 'math_for_dummy_data';
+const SUPABASE_CONFIG_KEY = 'math_for_dummy_supabase_config';
 const GITHUB_CONFIG_KEY = 'math_for_dummy_gh_config';
 const GOOGLE_CONFIG_KEY = 'math_for_dummy_google_config';
 const GOOGLE_CLIENT_ID_KEY = 'math_for_dummy_google_client_id';
@@ -97,9 +98,9 @@ export async function saveGoogleClientId(clientId: string): Promise<void> {
 export async function loadActiveSyncProvider(): Promise<SyncProviderType> {
   try {
     const provider = await get<SyncProviderType>(SYNC_PROVIDER_KEY);
-    return provider || 'google-drive';
+    return provider || 'supabase';
   } catch {
-    return 'google-drive';
+    return 'supabase';
   }
 }
 
@@ -142,5 +143,32 @@ export async function saveTheme(theme: Theme): Promise<void> {
     await set(THEME_KEY, theme);
   } catch (err) {
     console.error('Failed to save Theme preference:', err);
+  }
+}
+
+export async function loadSupabaseConfig(): Promise<SupabaseConfig | null> {
+  try {
+    const config = await get<SupabaseConfig>(SUPABASE_CONFIG_KEY);
+    return config || null;
+  } catch (err) {
+    console.error('Failed to load SupabaseConfig:', err);
+    return null;
+  }
+}
+
+export async function saveSupabaseConfig(config: SupabaseConfig): Promise<void> {
+  try {
+    await set(SUPABASE_CONFIG_KEY, config);
+  } catch (err) {
+    console.error('Failed to save SupabaseConfig:', err);
+    throw err;
+  }
+}
+
+export async function clearSupabaseConfig(): Promise<void> {
+  try {
+    await del(SUPABASE_CONFIG_KEY);
+  } catch (err) {
+    console.error('Failed to clear SupabaseConfig:', err);
   }
 }

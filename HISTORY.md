@@ -7,6 +7,21 @@
 
 ---
 
+### [2026-09-18] Supabase Real-Time Web Cloud Sync Migration
+- **Goal:** Completely bypass Google Cloud domain verification and OAuth approval roadblocks by migrating cross-device synchronization to Supabase PostgreSQL & Auth with instant 1-second sign-in and real-time auto-saving.
+- **Key Changes:**
+  - Installed `@supabase/supabase-js` and configured live user project (`https://ighvfbwdyrtgkkyhmgzi.supabase.co`).
+  - Built `src/services/supabase-sync.ts` implementing `signUpWithEmail`, `signInWithEmail`, `signOutSupabase`, `getSupabaseUser`, `pullFromSupabase`, and `pushToSupabase`.
+  - Configured `supabase` as the default sync provider across `SyncManager`, `storage.ts`, and `App.tsx`.
+  - Redesigned `src/components/SettingsModal.tsx` with a prominent Supabase Hero Card featuring email/password sign-in, 1-second registration, active user badge, and manual Push/Pull actions.
+  - Implemented background real-time auto-saving to Supabase on every flashcard rating (`handleRateCard`) and automatic cloud pull on app launch.
+  - Relocated Google Drive OAuth and Windows Explorer local folder sync to collapsible Advanced Settings.
+  - Published static `public/privacy.html` and `public/terms.html` and updated privacy policy covering Supabase and RLS.
+  - Updated `tests/sync-manager.test.ts` to assert Supabase default provider behavior and connection state.
+- **Verification:** All 24 automated unit tests passed (`npm test`). `npm run typecheck`, `npm run verify:curriculum`, and `npm run build` completed with 0 errors.
+
+---
+
 ### [2026-09-18] Google Drive Web Interface & Auto-Authentication (Real Web Client ID)
 - **Goal:** Replace OS Windows Explorer file picker with pure web-based Google Identity Services (GIS) auto-authentication using registered Google Cloud Web Client ID (`712761103246-...apps.googleusercontent.com`).
 - **Key Changes:**

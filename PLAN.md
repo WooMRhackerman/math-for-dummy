@@ -65,6 +65,14 @@
 ---
 
 ## 🔄 Phase 4: Sync & Multi-Device Reliability
+- [x] **Supabase Real-Time Web Cloud Sync (Zero-Friction Authentication)**
+  - [x] Integrated `@supabase/supabase-js` with live user project credentials.
+  - [x] Implemented `src/services/supabase-sync.ts` (Email/Password Auth, user session persistence, `user_progress` upsert/pull).
+  - [x] Made `supabase` the primary default sync provider across `SyncManager`, `storage.ts`, and `App.tsx`.
+  - [x] Created hero card in `src/components/SettingsModal.tsx` with email/password login, 1-second sign-up, user profile badge, and manual Push/Pull.
+  - [x] Implemented background real-time auto-saving to Supabase on every flashcard review rating (`handleRateCard`).
+  - [x] Auto-pull of latest study progress upon app launch when user is authenticated.
+  - [x] Relocated Google Drive OAuth and local file explorer sync to collapsible Advanced Settings.
 - [x] **Google Drive Web Interface & Auto-Authentication (1-Click GIS Web Popup)**
   - [x] Configured official Google Cloud OAuth 2.0 Web Client ID (`712761103246-...apps.googleusercontent.com`) directly in `src/services/google-drive-sync.ts`.
   - [x] Enabled pure web-based Google Identity Services login popup (`accounts.google.com`) with zero Windows Explorer.

@@ -79,5 +79,15 @@ export const ko = {
   cloudFileCreated: "새 클라우드 파일이 생성되어 연결되었습니다.",
   cloudFileDisconnected: "클라우드 파일 연결이 해제되었습니다.",
   cloudFileReloaded: "클라우드 파일에서 최신 데이터를 불러왔습니다.",
-  cloudFileSaved: "클라우드 파일에 저장되었습니다."
+  cloudFileSaved: "클라우드 파일에 저장되었습니다.",
+  supabaseSyncTitle: "Supabase 웹 클라우드 실시간 동기화",
+  supabaseSyncDesc: "계정으로 웹에서 즉시 로그인하여 모든 기기(PC, 태블릿, 모바일) 간 실시간 자동 동기화합니다. (구글 도메인 검수/설정 0%)",
+  emailLabel: "이메일",
+  passwordLabel: "비밀번호",
+  signIn: "로그인",
+  signUp: "1초 회원가입",
+  signOut: "로그아웃",
+  supabaseConnected: "Supabase 클라우드 연결됨",
+  supabaseConnecting: "클라우드 연결 중...",
+  supabaseDisconnected: "로그아웃되었습니다."
 };

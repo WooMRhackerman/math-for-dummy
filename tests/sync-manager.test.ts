@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { SyncManager } from '../src/services/sync-manager';
 
 describe('SyncManager Multi-Provider Coordinator', () => {
-  it('should initialize with default google-drive provider', () => {
+  it('should initialize with default supabase provider', () => {
     const manager = new SyncManager();
-    expect(manager.getProvider()).toBe('google-drive');
+    expect(manager.getProvider()).toBe('supabase');
     expect(manager.getStatus().status).toBe('idle');
   });
 
@@ -16,6 +16,9 @@ describe('SyncManager Multi-Provider Coordinator', () => {
     manager.setProvider('google-drive');
     expect(manager.getProvider()).toBe('google-drive');
 
+    manager.setProvider('supabase');
+    expect(manager.getProvider()).toBe('supabase');
+
     manager.setProvider('local');
     expect(manager.getProvider()).toBe('local');
     expect(manager.isConnected()).toBe(true);
@@ -24,7 +27,19 @@ describe('SyncManager Multi-Provider Coordinator', () => {
   it('should evaluate connection state accurately based on provider credentials', () => {
     const manager = new SyncManager();
     
-    // Google Drive with no config -> not connected
+    // Supabase default with no user -> not connected
+    expect(manager.isConnected()).toBe(false);
+
+    // Supabase with user -> connected
+    manager.setSupabaseConfig({
+      url: 'https://example.supabase.co',
+      anonKey: 'anon-key',
+      user: { id: '123', email: 'user@example.com' }
+    });
+    expect(manager.isConnected()).toBe(true);
+
+    // Switch to Google Drive with no config -> not connected
+    manager.setProvider('google-drive');
     expect(manager.isConnected()).toBe(false);
 
     // Google Drive with active config -> connected

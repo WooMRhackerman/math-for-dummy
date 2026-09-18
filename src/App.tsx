@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { AppData, Deck, Flashcard, GitHubConfig, GoogleDriveConfig, Language, SyncProviderType, SyncStatus, Theme } from './types';
+import { AppData, Deck, Flashcard, GitHubConfig, GoogleDriveConfig, Language, SupabaseUser, SyncProviderType, SyncStatus, Theme } from './types';
 import { 
   loadAppData, saveAppData, loadGitHubConfig, saveGitHubConfig, 
   loadGoogleConfig, saveGoogleConfig, clearGoogleConfig,
@@ -23,6 +23,14 @@ import {
   readDataFromFileHandle,
   writeDataToFileHandle
 } from './services/cloud-drive-file';
+import {
+  getSupabaseUser,
+  signInWithEmail,
+  signUpWithEmail,
+  signOutSupabase,
+  pullFromSupabase,
+  pushToSupabase
+} from './services/supabase-sync';
 import { SyncManager } from './services/sync-manager';
 import { calculateNextReview, isCardDue } from './services/srs';
 import seedData from './data/curriculum-seed.json';
@@ -35,7 +43,8 @@ import { CheckCircle2, RotateCcw, ArrowLeft } from 'lucide-react';
 
 export function App() {
   const [data, setData] = useState<AppData | null>(null);
-  const [activeProvider, setActiveProvider] = useState<SyncProviderType>('google-drive');
+  const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
+  const [activeProvider, setActiveProvider] = useState<SyncProviderType>('supabase');
   const [cloudFileHandle, setCloudFileHandle] = useState<FileSystemFileHandle | null>(null);
   const [connectedFileName, setConnectedFileName] = useState<string>('');
   const isCloudFileSupported = isFileSystemAccessSupported();
@@ -92,7 +101,8 @@ export function App() {
         savedFileName, 
         savedProvider, 
         savedLang, 
-        savedTheme
+        savedTheme,
+        currentSupabaseUser
       ] = await Promise.all([
         loadAppData(),
         loadGitHubConfig(),
@@ -102,7 +112,8 @@ export function App() {
         loadCloudDriveFileName(),
         loadActiveSyncProvider(),
         loadLanguage(),
-        loadTheme()
+        loadTheme(),
+        getSupabaseUser()
       ]);
 
       if (savedData && savedData.decks && savedData.decks.length > 0) {
@@ -112,6 +123,10 @@ export function App() {
         const initial = seedData as unknown as AppData;
         await saveAppData(initial);
         setData(initial);
+      }
+
+      if (currentSupabaseUser) {
+        setSupabaseUser(currentSupabaseUser);
       }
 
       if (savedConfig) {
@@ -128,17 +143,31 @@ export function App() {
         setGoogleClientId(DEFAULT_GOOGLE_CLIENT_ID);
       }
 
-      if (savedGoogle) {
-        setGoogleConfig(savedGoogle);
+      if (savedProvider) {
+        setActiveProvider(savedProvider);
+      } else if (currentSupabaseUser) {
+        setActiveProvider('supabase');
+      } else if (savedGoogle) {
         setActiveProvider('google-drive');
       } else if (savedHandle) {
         setCloudFileHandle(savedHandle);
         setConnectedFileName(savedFileName || savedHandle.name);
         setActiveProvider('cloud-file');
-      } else if (savedProvider) {
-        setActiveProvider(savedProvider);
       } else {
-        setActiveProvider('google-drive');
+        setActiveProvider('supabase');
+      }
+
+      // If user is authenticated with Supabase and activeProvider is supabase, auto pull latest
+      if (currentSupabaseUser && (savedProvider === 'supabase' || !savedProvider)) {
+        try {
+          const res = await pullFromSupabase();
+          if (res && res.data) {
+            setData(res.data);
+            await saveAppData(res.data);
+          }
+        } catch {
+          // Keep local if offline or no remote record yet
+        }
       }
 
       if (savedLang) {
@@ -350,6 +379,69 @@ export function App() {
     setTimeout(() => setSyncMessage(''), 3000);
   };
 
+  // Supabase Auth Handlers
+  const handleSignInSupabase = async (email: string, pass: string) => {
+    setSyncStatus('syncing');
+    setSyncMessage(t('supabaseConnecting'));
+    const { user } = await signInWithEmail(email, pass);
+    const suUser: SupabaseUser = { id: user.id, email: user.email || '' };
+    setSupabaseUser(suUser);
+    setActiveProvider('supabase');
+    await saveActiveSyncProvider('supabase');
+
+    try {
+      const res = await pullFromSupabase();
+      setData(res.data);
+      await saveAppData(res.data);
+      setSyncStatus('success');
+      setSyncMessage(`Supabase 클라우드 데이터 로드 완료 (${user.email})`);
+    } catch {
+      // If no remote record exists yet, push local data
+      if (data) {
+        try {
+          await pushToSupabase(data);
+          setSyncStatus('success');
+          setSyncMessage(`Supabase 클라우드에 초기 데이터 저장 완료 (${user.email})`);
+        } catch {
+          setSyncStatus('idle');
+        }
+      } else {
+        setSyncStatus('idle');
+      }
+    }
+    setTimeout(() => setSyncStatus('idle'), 3500);
+  };
+
+  const handleSignUpSupabase = async (email: string, pass: string) => {
+    setSyncStatus('syncing');
+    setSyncMessage(t('supabaseConnecting'));
+    const { user } = await signUpWithEmail(email, pass);
+    if (user) {
+      const suUser: SupabaseUser = { id: user.id, email: user.email || '' };
+      setSupabaseUser(suUser);
+      setActiveProvider('supabase');
+      await saveActiveSyncProvider('supabase');
+      if (data) {
+        try {
+          await pushToSupabase(data);
+        } catch (e) {
+          console.warn('Initial push to Supabase after signup:', e);
+        }
+      }
+      setSyncStatus('success');
+      setSyncMessage(`회원가입 완료 및 클라우드 연동됨 (${user.email})`);
+      setTimeout(() => setSyncStatus('idle'), 3500);
+    }
+  };
+
+  const handleSignOutSupabase = async () => {
+    await signOutSupabase();
+    setSupabaseUser(null);
+    setSyncStatus('idle');
+    setSyncMessage(t('supabaseDisconnected'));
+    setTimeout(() => setSyncMessage(''), 3000);
+  };
+
   // Export JSON file backup
   const handleExportJSON = () => {
     if (!data) return;
@@ -387,6 +479,28 @@ export function App() {
 
   // Cloud Pull
   const handlePull = useCallback(async () => {
+    if (activeProvider === 'supabase') {
+      if (!supabaseUser) {
+        setIsSettingsOpen(true);
+        return;
+      }
+      try {
+        setSyncStatus('syncing');
+        setSyncMessage(t('syncing'));
+        const res = await pullFromSupabase();
+        setData(res.data);
+        await saveAppData(res.data);
+        setSyncStatus('success');
+        setSyncMessage(t('syncSuccess'));
+        setTimeout(() => setSyncStatus('idle'), 3000);
+      } catch (err: unknown) {
+        console.error(err);
+        setSyncStatus('error');
+        setSyncMessage(err instanceof Error ? err.message : t('syncError'));
+      }
+      return;
+    }
+
     if (activeProvider === 'cloud-file') {
       if (!cloudFileHandle) {
         setIsSettingsOpen(true);
@@ -465,11 +579,31 @@ export function App() {
         setSyncMessage(msg === 'FILE_NOT_FOUND' ? 'GitHub에 파일이 없습니다. Push를 먼저 실행하세요.' : t('syncError'));
       }
     }
-  }, [activeProvider, cloudFileHandle, googleConfig, githubConfig, t]);
+  }, [activeProvider, supabaseUser, cloudFileHandle, googleConfig, githubConfig, t]);
 
   // Cloud Push
   const handlePush = useCallback(async () => {
     if (!data) return;
+
+    if (activeProvider === 'supabase') {
+      if (!supabaseUser) {
+        setIsSettingsOpen(true);
+        return;
+      }
+      try {
+        setSyncStatus('syncing');
+        setSyncMessage(t('syncing'));
+        await pushToSupabase(data);
+        setSyncStatus('success');
+        setSyncMessage(t('syncSuccess'));
+        setTimeout(() => setSyncStatus('idle'), 3000);
+      } catch (err: unknown) {
+        console.error(err);
+        setSyncStatus('error');
+        setSyncMessage(err instanceof Error ? err.message : t('syncError'));
+      }
+      return;
+    }
 
     if (activeProvider === 'cloud-file') {
       if (!cloudFileHandle) {
@@ -545,7 +679,7 @@ export function App() {
         }
       }
     }
-  }, [activeProvider, cloudFileHandle, googleConfig, githubConfig, data, t]);
+  }, [activeProvider, supabaseUser, cloudFileHandle, googleConfig, githubConfig, data, t]);
 
   // Save Settings from modal
   const handleSaveConfig = async (newConfig: GitHubConfig) => {
@@ -593,6 +727,13 @@ export function App() {
     setData(newData);
     await saveAppData(newData);
     setActiveDeck(updatedDeck);
+
+    // Real-time auto-save to Supabase if active
+    if (activeProvider === 'supabase' && supabaseUser) {
+      pushToSupabase(newData).catch((err) => {
+        console.warn('Real-time Supabase auto-save failed:', err);
+      });
+    }
 
     // Real-time auto-save to Google Drive if active
     if (activeProvider === 'google-drive' && googleConfig && Date.now() < googleConfig.expiresAt) {
@@ -696,6 +837,7 @@ export function App() {
         config={githubConfig}
         googleConfig={googleConfig}
         googleClientId={googleClientId}
+        supabaseUser={supabaseUser}
         activeProvider={activeProvider}
         isCloudFileSupported={isCloudFileSupported}
         connectedFileName={connectedFileName}
@@ -711,6 +853,9 @@ export function App() {
         onSaveGoogleClientId={handleSaveGoogleClientId}
         onConnectGoogle={handleConnectGoogle}
         onDisconnectGoogle={handleDisconnectGoogle}
+        onSignInSupabase={handleSignInSupabase}
+        onSignUpSupabase={handleSignUpSupabase}
+        onSignOutSupabase={handleSignOutSupabase}
         onPush={handlePush}
         onPull={handlePull}
         onExportJSON={handleExportJSON}

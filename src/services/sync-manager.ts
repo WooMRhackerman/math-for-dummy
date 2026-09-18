@@ -1,11 +1,13 @@
-import { AppData, GitHubConfig, GoogleDriveConfig, SyncProviderType, SyncResult, SyncStatus } from '../types';
+import { AppData, GitHubConfig, GoogleDriveConfig, SupabaseConfig, SyncProviderType, SyncResult, SyncStatus } from '../types';
 import { pullFromGoogleDrive, pushToGoogleDrive } from './google-drive-sync';
 import { pullFromGitHub, pushToGitHub } from './github-sync';
 import { readDataFromFileHandle, writeDataToFileHandle } from './cloud-drive-file';
+import { pullFromSupabase, pushToSupabase } from './supabase-sync';
 import { loadAppData, saveAppData } from './storage';
 
 export class SyncManager {
-  private activeProvider: SyncProviderType = 'google-drive';
+  private activeProvider: SyncProviderType = 'supabase';
+  private supabaseConfig: SupabaseConfig | null = null;
   private cloudFileHandle: FileSystemFileHandle | null = null;
   private cloudFileName = '';
   private googleConfig: GoogleDriveConfig | null = null;
@@ -16,12 +18,14 @@ export class SyncManager {
 
   constructor(options?: {
     provider?: SyncProviderType;
+    supabaseConfig?: SupabaseConfig | null;
     cloudFileHandle?: FileSystemFileHandle | null;
     cloudFileName?: string;
     googleConfig?: GoogleDriveConfig | null;
     githubConfig?: GitHubConfig;
   }) {
     if (options?.provider) this.activeProvider = options.provider;
+    if (options?.supabaseConfig !== undefined) this.supabaseConfig = options.supabaseConfig;
     if (options?.cloudFileHandle !== undefined) this.cloudFileHandle = options.cloudFileHandle;
     if (options?.cloudFileName) this.cloudFileName = options.cloudFileName;
     if (options?.googleConfig !== undefined) this.googleConfig = options.googleConfig;
@@ -46,6 +50,14 @@ export class SyncManager {
       handle: this.cloudFileHandle,
       name: this.cloudFileName
     };
+  }
+
+  public setSupabaseConfig(config: SupabaseConfig | null) {
+    this.supabaseConfig = config;
+  }
+
+  public getSupabaseConfig(): SupabaseConfig | null {
+    return this.supabaseConfig;
   }
 
   public setGoogleConfig(config: GoogleDriveConfig | null) {
@@ -73,6 +85,9 @@ export class SyncManager {
   }
 
   public isConnected(): boolean {
+    if (this.activeProvider === 'supabase') {
+      return !!this.supabaseConfig?.user;
+    }
     if (this.activeProvider === 'cloud-file') {
       return !!this.cloudFileHandle;
     }
@@ -93,6 +108,20 @@ export class SyncManager {
     this.message = 'Pulling data...';
 
     try {
+      if (this.activeProvider === 'supabase') {
+        const res = await pullFromSupabase();
+        await saveAppData(res.data);
+
+        this.status = 'success';
+        this.message = 'Supabase 클라우드에서 불러왔습니다.';
+        this.lastSynced = res.timestamp;
+
+        return {
+          data: res.data,
+          source: 'supabase',
+          timestamp: this.lastSynced
+        };
+      }
       if (this.activeProvider === 'cloud-file') {
         if (!this.cloudFileHandle) {
           throw new Error('NO_CLOUD_FILE_CONNECTED');
@@ -187,6 +216,14 @@ export class SyncManager {
     try {
       // Always persist locally first
       await saveAppData(data);
+
+      if (this.activeProvider === 'supabase') {
+        const res = await pushToSupabase(data);
+        this.status = 'success';
+        this.message = 'Supabase 클라우드에 자동 저장되었습니다.';
+        this.lastSynced = res.timestamp;
+        return {};
+      }
 
       if (this.activeProvider === 'cloud-file') {
         if (!this.cloudFileHandle) {

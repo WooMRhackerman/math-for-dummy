@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { 
   X, Key, UploadCloud, DownloadCloud, BookOpen, Check, AlertTriangle, 
   Sun, Moon, Monitor, ChevronDown, ChevronUp, FileDown, FileUp, Database,
-  HelpCircle, ExternalLink, FolderSync, HardDrive, RefreshCw, PlusCircle
+  HelpCircle, ExternalLink, FolderSync, HardDrive, RefreshCw, PlusCircle,
+  Cloud, LogIn, UserPlus, LogOut
 } from 'lucide-react';
-import { GitHubConfig, GoogleDriveConfig, Language, SyncProviderType, SyncStatus, Theme } from '../types';
+import { GitHubConfig, GoogleDriveConfig, Language, SupabaseUser, SyncProviderType, SyncStatus, Theme } from '../types';
 import { getTranslation } from '../i18n';
 
 interface SettingsModalProps {
@@ -14,6 +15,7 @@ interface SettingsModalProps {
   config: GitHubConfig;
   googleConfig: GoogleDriveConfig | null;
   googleClientId: string;
+  supabaseUser: SupabaseUser | null;
   activeProvider: SyncProviderType;
   isCloudFileSupported: boolean;
   connectedFileName: string;
@@ -29,6 +31,9 @@ interface SettingsModalProps {
   onSaveGoogleClientId: (clientId: string) => void;
   onConnectGoogle: () => void;
   onDisconnectGoogle: () => void;
+  onSignInSupabase: (email: string, pass: string) => Promise<void>;
+  onSignUpSupabase: (email: string, pass: string) => Promise<void>;
+  onSignOutSupabase: () => Promise<void>;
   onPush: () => void;
   onPull: () => void;
   onExportJSON: () => void;
@@ -46,6 +51,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   config,
   googleConfig,
   googleClientId,
+  supabaseUser,
   activeProvider,
   isCloudFileSupported,
   connectedFileName,
@@ -61,6 +67,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onSaveGoogleClientId,
   onConnectGoogle,
   onDisconnectGoogle,
+  onSignInSupabase,
+  onSignUpSupabase,
+  onSignOutSupabase,
   onPush,
   onPull,
   onExportJSON,
@@ -77,6 +86,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
+  // Supabase Auth State
+  const [supabaseEmail, setSupabaseEmail] = useState('');
+  const [supabasePassword, setSupabasePassword] = useState('');
+  const [supabaseAuthMode, setSupabaseAuthMode] = useState<'signin' | 'signup'>('signin');
+  const [supabaseAuthLoading, setSupabaseAuthLoading] = useState(false);
+  const [supabaseAuthError, setSupabaseAuthError] = useState('');
+  const [supabaseAuthSuccess, setSupabaseAuthSuccess] = useState('');
+
   const [clientIdInput, setClientIdInput] = useState(googleClientId);
   const [savedClientIdSuccess, setSavedClientIdSuccess] = useState(false);
   const [showGoogleGuide, setShowGoogleGuide] = useState(false);
@@ -86,6 +103,32 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language, key);
   const isGoogleConnected = !!(googleConfig && Date.now() < googleConfig.expiresAt);
   const isFileConnected = activeProvider === 'cloud-file' && !!connectedFileName;
+
+  const handleSupabaseSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!supabaseEmail.trim() || !supabasePassword.trim()) {
+      setSupabaseAuthError('이메일과 비밀번호를 모두 입력해주세요.');
+      return;
+    }
+    setSupabaseAuthLoading(true);
+    setSupabaseAuthError('');
+    setSupabaseAuthSuccess('');
+
+    try {
+      if (supabaseAuthMode === 'signup') {
+        await onSignUpSupabase(supabaseEmail.trim(), supabasePassword.trim());
+        setSupabaseAuthSuccess('가입이 완료되었습니다! 로그인되었습니다.');
+      } else {
+        await onSignInSupabase(supabaseEmail.trim(), supabasePassword.trim());
+        setSupabaseAuthSuccess('로그인되었습니다.');
+      }
+      setSupabasePassword('');
+    } catch (err: unknown) {
+      setSupabaseAuthError(err instanceof Error ? err.message : '인증 실패');
+    } finally {
+      setSupabaseAuthLoading(false);
+    }
+  };
 
   const handleSaveClientId = (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,63 +189,52 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
           )}
 
-          {/* 🌟 1. Primary: Google Drive Web Cloud Sync (Web Interface / Chrome Auto-auth) */}
-          <div className="rounded-2xl border-2 border-blue-500/40 bg-gradient-to-br from-blue-50/70 to-indigo-50/40 dark:from-blue-950/40 dark:to-indigo-950/20 p-4 space-y-4 shadow-sm">
+          {/* 🌟 1. Primary: Supabase Real-time Web Cloud Sync */}
+          <div className="rounded-2xl border-2 border-emerald-500/40 bg-gradient-to-br from-emerald-50/70 via-teal-50/40 to-blue-50/40 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-blue-950/20 p-4 space-y-4 shadow-sm">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
-                    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.35 24 12 24z"/>
-                    <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
-                    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.35 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
-                  </svg>
-                  <span>Google Drive 웹 클라우드 연동</span>
+                  <Cloud className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span>{t('supabaseSyncTitle')}</span>
                 </h3>
                 <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
-                  크롬이나 스마트폰에 로그인된 구글 계정으로 웹 팝업에서 1초 만에 연동합니다. (윈도우 탐색기 0%)
+                  {t('supabaseSyncDesc')}
                 </p>
               </div>
-              <span className={`px-2 py-0.5 text-[10px] font-extrabold rounded-full shrink-0 ${
-                isGoogleConnected 
+              <span className={`px-2.5 py-0.5 text-[10px] font-extrabold rounded-full shrink-0 ${
+                supabaseUser 
                   ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300' 
                   : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
               }`}>
-                {isGoogleConnected ? '연동됨' : '미연결'}
+                {supabaseUser ? '연동됨' : '미연결'}
               </span>
             </div>
 
-            {isGoogleConnected ? (
+            {supabaseUser ? (
               <div className="bg-white dark:bg-slate-800 rounded-xl p-3.5 border border-slate-200 dark:border-slate-700 space-y-3">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2.5 overflow-hidden">
-                    {googleConfig?.userInfo?.picture ? (
-                      <img
-                        src={googleConfig.userInfo.picture}
-                        alt="Profile"
-                        className="w-9 h-9 rounded-full object-cover border border-slate-200 dark:border-slate-700 shrink-0"
-                      />
-                    ) : (
-                      <div className="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 font-bold flex items-center justify-center shrink-0 text-sm">
-                        {googleConfig?.userInfo?.name?.[0] || 'G'}
-                      </div>
-                    )}
+                    <div className="w-9 h-9 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 font-bold flex items-center justify-center shrink-0 text-sm border border-emerald-300 dark:border-emerald-700">
+                      {supabaseUser.email ? supabaseUser.email[0].toUpperCase() : 'U'}
+                    </div>
                     <div className="truncate">
                       <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                        {googleConfig?.userInfo?.name}
+                        {supabaseUser.email}
                       </div>
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                        {googleConfig?.userInfo?.email}
+                      <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        {t('supabaseConnected')}
                       </div>
                     </div>
                   </div>
 
                   <button
                     type="button"
-                    onClick={onDisconnectGoogle}
-                    className="min-h-9 px-2.5 py-1 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg transition shrink-0"
+                    onClick={onSignOutSupabase}
+                    className="min-h-9 px-2.5 py-1 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg transition shrink-0 flex items-center gap-1 cursor-pointer"
                   >
-                    연동 해제
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>{t('signOut')}</span>
                   </button>
                 </div>
 
@@ -211,7 +243,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     type="button"
                     onClick={onPush}
                     disabled={syncStatus === 'syncing'}
-                    className="min-h-10 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm disabled:opacity-50"
+                    className="min-h-10 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm disabled:opacity-50 cursor-pointer"
                   >
                     <UploadCloud className="w-3.5 h-3.5" />
                     <span>지금 동기화 (Push)</span>
@@ -221,7 +253,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     type="button"
                     onClick={onPull}
                     disabled={syncStatus === 'syncing'}
-                    className="min-h-10 px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition disabled:opacity-50"
+                    className="min-h-10 px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition disabled:opacity-50 cursor-pointer"
                   >
                     <DownloadCloud className="w-3.5 h-3.5" />
                     <span>불러오기 (Pull)</span>
@@ -229,25 +261,77 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="space-y-2">
-                <button
-                  type="button"
-                  onClick={onConnectGoogle}
-                  disabled={syncStatus === 'syncing'}
-                  className="w-full min-h-12 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-bold shadow-sm transition flex items-center justify-center gap-2.5 cursor-pointer"
-                >
-                  <svg className="w-4 h-4" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
-                    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.35 24 12 24z"/>
-                    <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
-                    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.35 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
-                  </svg>
-                  <span>Google 계정으로 계속 (웹 연동)</span>
-                </button>
+              <form onSubmit={handleSupabaseSubmit} className="bg-white dark:bg-slate-800 rounded-xl p-3.5 border border-slate-200 dark:border-slate-700 space-y-3">
+                {supabaseAuthError && (
+                  <div className="p-2 rounded-lg bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-1.5">
+                    <AlertTriangle className="w-4 h-4 shrink-0" />
+                    <span>{supabaseAuthError}</span>
+                  </div>
+                )}
+                {supabaseAuthSuccess && (
+                  <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-300 text-xs flex items-center gap-1.5">
+                    <Check className="w-4 h-4 shrink-0" />
+                    <span>{supabaseAuthSuccess}</span>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      {t('emailLabel')}
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={supabaseEmail}
+                      onChange={(e) => setSupabaseEmail(e.target.value)}
+                      placeholder="user@example.com"
+                      className="w-full min-h-10 px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      {t('passwordLabel')} (6자 이상)
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      minLength={6}
+                      value={supabasePassword}
+                      onChange={(e) => setSupabasePassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full min-h-10 px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-1">
+                  <button
+                    type="submit"
+                    onClick={() => setSupabaseAuthMode('signin')}
+                    disabled={supabaseAuthLoading}
+                    className="flex-1 min-h-11 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm disabled:opacity-50 cursor-pointer"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    <span>{supabaseAuthLoading && supabaseAuthMode === 'signin' ? '로그인 중...' : t('signIn')}</span>
+                  </button>
+
+                  <button
+                    type="submit"
+                    onClick={() => setSupabaseAuthMode('signup')}
+                    disabled={supabaseAuthLoading}
+                    className="flex-1 min-h-11 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition disabled:opacity-50 cursor-pointer"
+                  >
+                    <UserPlus className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    <span>{supabaseAuthLoading && supabaseAuthMode === 'signup' ? '가입 중...' : t('signUp')}</span>
+                  </button>
+                </div>
+
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 text-center leading-normal">
-                  💡 크롬/스마트폰에 로그인된 계정 선택 창이 브라우저 팝업으로 열립니다.
+                  ✨ 한 번 로그인하면 이 기기에서 실시간으로 학습 진도가 자동 보관됩니다.
                 </p>
-              </div>
+              </form>
             )}
           </div>
 
@@ -388,53 +472,92 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <div className="bg-slate-50 dark:bg-slate-800/60 rounded-xl p-3.5 border border-slate-200 dark:border-slate-700 space-y-3">
                   <div className="flex items-center justify-between">
                     <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                      <Database className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                      Google Cloud OAuth 2.0 Web Login
+                      <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+                        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.35 24 12 24z"/>
+                        <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+                        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.35 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                      </svg>
+                      Google Drive 웹 연동 (OAuth 2.0)
                     </h4>
-                    <button
-                      type="button"
-                      onClick={() => setShowGoogleGuide(!showGoogleGuide)}
-                      className="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
-                    >
-                      <HelpCircle className="w-3 h-3" />
-                      {t('googleSetupGuide')}
-                    </button>
+                    <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
+                      isGoogleConnected
+                        ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300'
+                        : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
+                    }`}>
+                      {isGoogleConnected ? '연결됨' : '미연결'}
+                    </span>
                   </div>
 
-                  {showGoogleGuide && (
-                    <div className="p-2.5 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 rounded-lg text-xs space-y-1.5 text-slate-700 dark:text-slate-300">
-                      <div className="font-bold text-blue-900 dark:text-blue-200 flex items-center gap-1">
-                        <ExternalLink className="w-3 h-3" />
-                        Google Cloud Console 클라이언트 ID 설정:
+                  {isGoogleConnected ? (
+                    <div className="flex items-center justify-between bg-white dark:bg-slate-800 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700">
+                      <div className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
+                        {googleConfig?.userInfo?.email || 'Google 계정 연결됨'}
                       </div>
-                      <ol className="list-decimal list-inside space-y-0.5 text-[10px] text-slate-600 dark:text-slate-400">
-                        <li><a href="https://console.cloud.google.com/" target="_blank" rel="noreferrer" className="text-blue-600 underline">Google Cloud Console</a>에서 프로젝트 생성</li>
-                        <li>Google Drive API 사용 설정</li>
-                        <li>OAuth 클라이언트 ID (웹 애플리케이션) 생성 후 아래 입력창에 저장</li>
-                      </ol>
+                      <button
+                        type="button"
+                        onClick={onDisconnectGoogle}
+                        className="text-xs font-bold text-rose-600 hover:underline cursor-pointer"
+                      >
+                        연동 해제
+                      </button>
                     </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={onConnectGoogle}
+                      className="w-full min-h-9 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs rounded-lg flex items-center justify-center gap-2 transition cursor-pointer"
+                    >
+                      Google 계정 연결 시도
+                    </button>
                   )}
 
-                  <form onSubmit={handleSaveClientId} className="flex gap-2">
-                    <input
-                      type="text"
-                      value={clientIdInput}
-                      onChange={(e) => setClientIdInput(e.target.value)}
-                      placeholder="xxxx.apps.googleusercontent.com"
-                      className="flex-1 min-h-10 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <button
-                      type="submit"
-                      className="min-h-10 px-3 bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 text-white font-bold text-xs rounded-lg transition shrink-0 flex items-center gap-1"
-                    >
-                      {savedClientIdSuccess ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : null}
-                      {savedClientIdSuccess ? '저장됨' : '저장'}
-                    </button>
-                  </form>
+                  <div className="pt-2 border-t border-slate-200 dark:border-slate-700 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                        OAuth Client ID
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setShowGoogleGuide(!showGoogleGuide)}
+                        className="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer"
+                      >
+                        <HelpCircle className="w-3 h-3" />
+                        {t('googleSetupGuide')}
+                      </button>
+                    </div>
 
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                    현재 적용된 클라이언트 ID로 Google Identity Services 웹 로그인이 작동합니다.
-                  </p>
+                    {showGoogleGuide && (
+                      <div className="p-2.5 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 rounded-lg text-xs space-y-1.5 text-slate-700 dark:text-slate-300">
+                        <div className="font-bold text-blue-900 dark:text-blue-200 flex items-center gap-1">
+                          <ExternalLink className="w-3 h-3" />
+                          Google Cloud Console 클라이언트 ID 설정:
+                        </div>
+                        <ol className="list-decimal list-inside space-y-0.5 text-[10px] text-slate-600 dark:text-slate-400">
+                          <li><a href="https://console.cloud.google.com/" target="_blank" rel="noreferrer" className="text-blue-600 underline">Google Cloud Console</a>에서 프로젝트 생성</li>
+                          <li>Google Drive API 사용 설정</li>
+                          <li>OAuth 클라이언트 ID (웹 애플리케이션) 생성 후 아래 입력창에 저장</li>
+                        </ol>
+                      </div>
+                    )}
+
+                    <form onSubmit={handleSaveClientId} className="flex gap-2">
+                      <input
+                        type="text"
+                        value={clientIdInput}
+                        onChange={(e) => setClientIdInput(e.target.value)}
+                        placeholder="xxxx.apps.googleusercontent.com"
+                        className="flex-1 min-h-9 px-2.5 py-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <button
+                        type="submit"
+                        className="min-h-9 px-3 bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 text-white font-bold text-xs rounded-lg transition shrink-0 flex items-center gap-1 cursor-pointer"
+                      >
+                        {savedClientIdSuccess ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : null}
+                        {savedClientIdSuccess ? '저장됨' : '저장'}
+                      </button>
+                    </form>
+                  </div>
                 </div>
 
                 {/* Local Google Drive / OneDrive Folder Direct File Sync (Windows Explorer) */}

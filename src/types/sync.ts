@@ -1,6 +1,17 @@
 import { AppData, GitHubConfig } from './index';
 
-export type SyncProviderType = 'cloud-file' | 'google-drive' | 'github' | 'local';
+export type SyncProviderType = 'supabase' | 'google-drive' | 'cloud-file' | 'github' | 'local';
+
+export interface SupabaseUser {
+  id: string;
+  email: string;
+}
+
+export interface SupabaseConfig {
+  url: string;
+  anonKey: string;
+  user?: SupabaseUser | null;
+}
 
 export interface GoogleUserInfo {
   id: string;
