@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { RotateCw, ChevronLeft, Award } from 'lucide-react';
 import { Flashcard, Language, MathDomain } from '../types';
 import { KaTeXView } from './KaTeXView';
+import { DiagramRenderer } from './diagrams/DiagramRenderer';
 import { getTranslation } from '../i18n';
 
 interface StudyCardProps {
@@ -134,7 +135,7 @@ export const StudyCard: React.FC<StudyCardProps> = ({
               </div>
 
               {/* Front Question Content */}
-              <div className="my-auto py-6 text-center">
+              <div className="my-auto py-4 text-center overflow-y-auto max-h-[55vh] overscroll-contain pr-1">
                 <div className="text-xs uppercase font-bold text-blue-600 dark:text-blue-400 tracking-wider mb-2">
                   QUESTION / 개념 질문
                 </div>
@@ -142,6 +143,14 @@ export const StudyCard: React.FC<StudyCardProps> = ({
                   content={frontText}
                   className="text-lg sm:text-2xl font-semibold text-slate-800 dark:text-slate-100"
                 />
+                {card.diagram && (card.diagram.position === 'front' || card.diagram.position === 'both') && (
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    className="mt-4 w-full text-left"
+                  >
+                    <DiagramRenderer config={card.diagram} language={language} interactive={true} />
+                  </div>
+                )}
               </div>
 
               {/* Bottom Flip Prompt */}
@@ -163,11 +172,19 @@ export const StudyCard: React.FC<StudyCardProps> = ({
               </div>
 
               {/* Back Answer Content */}
-              <div className="my-auto py-6 text-center">
+              <div className="my-auto py-4 text-center overflow-y-auto max-h-[55vh] overscroll-contain pr-1">
                 <KaTeXView
                   content={backText}
                   className="text-base sm:text-xl font-medium text-slate-100 leading-relaxed"
                 />
+                {card.diagram && (!card.diagram.position || card.diagram.position === 'back' || card.diagram.position === 'both') && (
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    className="mt-4 w-full text-left"
+                  >
+                    <DiagramRenderer config={card.diagram} language={language} interactive={true} />
+                  </div>
+                )}
               </div>
 
               {/* Flip back reminder */}

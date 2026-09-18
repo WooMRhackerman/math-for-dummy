@@ -1,5 +1,5 @@
 import React from 'react';
-import { Cloud, RefreshCw, CheckCircle2, AlertCircle, Settings, Globe, Sun, Moon } from 'lucide-react';
+import { Cloud, RefreshCw, CheckCircle2, AlertCircle, Settings, Globe, Sun, Moon, Sparkles } from 'lucide-react';
 import { Language, SyncStatus } from '../types';
 import { getTranslation } from '../i18n';
 
@@ -10,6 +10,7 @@ interface HeaderProps {
   onToggleLanguage: () => void;
   onToggleTheme: () => void;
   onOpenSettings: () => void;
+  onOpenMathLab: () => void;
   onSync: () => void;
 }
 
@@ -20,6 +21,7 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleLanguage,
   onToggleTheme,
   onOpenSettings,
+  onOpenMathLab,
   onSync
 }) => {
   const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language, key);
@@ -80,6 +82,16 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Globe className="w-4 h-4 text-slate-500 dark:text-slate-400" />
             <span>{language.toUpperCase()}</span>
+          </button>
+
+          {/* Visual Math Lab Launcher */}
+          <button
+            onClick={onOpenMathLab}
+            className="min-h-11 min-w-11 px-2.5 py-1.5 rounded-lg border border-purple-200 dark:border-purple-800/60 bg-purple-50/70 hover:bg-purple-100 dark:bg-purple-950/30 dark:hover:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-semibold text-xs flex items-center gap-1.5 transition"
+            title={t('mathLab')}
+          >
+            <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+            <span className="hidden sm:inline">{t('mathLab')}</span>
           </button>
 
           {/* Settings Modal Button */}

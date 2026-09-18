@@ -89,5 +89,7 @@ export const en = {
   signOut: "Sign Out",
   supabaseConnected: "Connected to Supabase",
   supabaseConnecting: "Connecting to Cloud...",
-  supabaseDisconnected: "Signed out successfully."
+  supabaseDisconnected: "Signed out successfully.",
+  mathLab: "Math Lab",
+  mathLabDesc: "Interactive Visual Manipulatives"
 };

@@ -7,6 +7,26 @@
 
 ---
 
+### [2026-09-18] Interactive Visual Diagrams & Visual Math Lab
+- **Goal:** Implement hands-on interactive visual manipulatives (Fraction Bars, Angle Protractor, Polygon Angles, 3D Net Folding, Number Line, Analog Clock) across elementary math concepts (Grades 1~6), embed them into study flashcards, and create a standalone "수학 실험실 (Visual Math Lab)" playground.
+- **Key Changes:**
+  - Built 6 lightweight React + SVG interactive components without heavy external 3D libraries (Three.js/WebGL):
+    - `FractionBarDiagram.tsx`: Visual strip fraction model with touch segment shading and equivalent fraction comparison ($1/2 = 2/4 = 4/8$).
+    - `AngleProtractorDiagram.tsx`: Semi-circular protractor with drag ray, degree ticks, and real-time classification (acute, right, obtuse, straight).
+    - `PolygonAngleDiagram.tsx`: Triangle vertex dragging with $180^\circ$ sum invariant and tear-and-combine visualization; quadrilateral $360^\circ$ split.
+    - `PrismNetDiagram.tsx`: 2D net $\leftrightarrow$ 3D isometric fold/unfold slider ($0\%\sim 100\%$) with color-coded parallel opposite faces.
+    - `NumberLineDiagram.tsx`: Number line with draggable slider and jump arcs for integers ($0\sim 10$) and decimals ($0.1\sim 1.0$).
+    - `ClockDiagram.tsx`: Interactive analog clock face with draggable/steppable hour/minute hands and real-time digital sync.
+  - Built `DiagramRenderer.tsx` dispatcher component supporting card-embedded and standalone modes.
+  - Built `MathLabModal.tsx` ("수학 실험실") modal with category tabs, grade badges, learning goals, and live interactive manipulatives.
+  - Updated `Header.tsx` and `App.tsx` with a quick-launch "수학 실험실" button with `Sparkles` icon.
+  - Updated `StudyCard.tsx` to render interactive diagrams on front/back with event bubbling guards (`e.stopPropagation()`) and touch ergonomics ($\ge 44\times 44\text{px}$).
+  - Attached diagram configurations to representative curriculum cards in `src/data/curriculum-seed.json`.
+  - Added unit test suite `tests/diagrams.test.ts` (8 tests) verifying angle classification, fraction equivalence, polygon angle sum, and clock angles.
+- **Verification:** All 32 automated unit tests passed (`vitest run`). `npm run typecheck`, `npm run verify:curriculum`, and `npm run build` succeeded without errors.
+
+---
+
 ### [2026-09-18] Supabase Real-Time Web Cloud Sync Migration
 - **Goal:** Completely bypass Google Cloud domain verification and OAuth approval roadblocks by migrating cross-device synchronization to Supabase PostgreSQL & Auth with instant 1-second sign-in and real-time auto-saving.
 - **Key Changes:**

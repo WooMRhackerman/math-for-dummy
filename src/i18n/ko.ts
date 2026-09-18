@@ -89,5 +89,7 @@ export const ko = {
   signOut: "로그아웃",
   supabaseConnected: "Supabase 클라우드 연결됨",
   supabaseConnecting: "클라우드 연결 중...",
-  supabaseDisconnected: "로그아웃되었습니다."
+  supabaseDisconnected: "로그아웃되었습니다.",
+  mathLab: "수학 실험실",
+  mathLabDesc: "인터랙티브 시각화 교구"
 };

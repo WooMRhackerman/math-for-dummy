@@ -35,6 +35,15 @@
             "interval": 0,
             "easeFactor": 2.5,
             "dueDate": ""
+          },
+          "diagram": {
+            "type": "number-line",
+            "position": "both",
+            "initialData": {
+              "start": 5,
+              "step": 1,
+              "mode": "integers"
+            }
           }
         },
         {
@@ -276,6 +285,14 @@
             "interval": 0,
             "easeFactor": 2.5,
             "dueDate": ""
+          },
+          "diagram": {
+            "type": "clock",
+            "position": "both",
+            "initialData": {
+              "hours": 2,
+              "minutes": 30
+            }
           }
         }
       ]
@@ -776,6 +793,16 @@
             "interval": 0,
             "easeFactor": 2.5,
             "dueDate": ""
+          },
+          "diagram": {
+            "type": "fraction-bar",
+            "position": "back",
+            "initialData": {
+              "numerator": 1,
+              "denominator": 2,
+              "comparisonDenominator": 4,
+              "showComparison": true
+            }
           }
         }
       ]
@@ -1007,6 +1034,13 @@
             "interval": 0,
             "easeFactor": 2.5,
             "dueDate": ""
+          },
+          "diagram": {
+            "type": "angle-protractor",
+            "position": "both",
+            "initialData": {
+              "angle": 60
+            }
           }
         },
         {
@@ -1171,6 +1205,13 @@
             "interval": 0,
             "easeFactor": 2.5,
             "dueDate": ""
+          },
+          "diagram": {
+            "type": "polygon-angle",
+            "position": "back",
+            "initialData": {
+              "sides": 3
+            }
           }
         },
         {
@@ -1589,6 +1630,14 @@
             "interval": 0,
             "easeFactor": 2.5,
             "dueDate": ""
+          },
+          "diagram": {
+            "type": "prism-net",
+            "position": "back",
+            "initialData": {
+              "fold": 0,
+              "solidType": "cube"
+            }
           }
         },
         {

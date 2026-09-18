@@ -41,9 +41,13 @@
   - [x] Grade 5~6: Divisors & multiples, fraction/decimal operations, ratio & percentage, circle area, prism volume (24 units).
   - [x] Deck list badge updated to display `{deck.grade}학년 {deck.semester}학기`.
   - [x] Verified 100% 5-domain coverage with KaTeX rendering integrity.
-- [ ] **Interactive Visual Diagrams**
-  - [ ] SVG/Canvas dynamic geometric shapes for Geometry units (angle arcs, parallel lines, 3D nets).
-  - [ ] Visual fraction bars and number lines for Numbers & Operations.
+- [x] **Interactive Visual Diagrams & Visual Math Lab**
+  - [x] SVG dynamic geometric shapes for Geometry units (angle protractor with classification, polygon angle sum, 3D net folding).
+  - [x] Visual fraction bars (strip equivalence & coloring) and number line leaps for Numbers & Operations.
+  - [x] Interactive analog clock with real-time digital sync and 5-minute stepper for Measurement.
+  - [x] Embedded interactive diagram view on flashcard front/back with event bubbling guards.
+  - [x] Standalone "수학 실험실 (Visual Math Lab)" modal accessible from the header.
+  - [x] Comprehensive automated test suite (`tests/diagrams.test.ts`) covering angle classification, fraction equivalence, polygon angle sum theorem, and clock hand calculations.
 - [ ] **Deck Customization & Card Creator**
   - [ ] In-app Card Creator modal to add custom personal study cards.
   - [ ] Edit and delete existing cards directly from the study view.

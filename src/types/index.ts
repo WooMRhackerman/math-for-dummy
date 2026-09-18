@@ -12,6 +12,25 @@ export interface SRSState {
   dueDate: string;       // YYYY-MM-DD
 }
 
+export type DiagramType = 
+  | 'fraction-bar' 
+  | 'angle-protractor' 
+  | 'polygon-angle' 
+  | 'prism-net' 
+  | 'number-line' 
+  | 'clock';
+
+export interface DiagramConfig {
+  type: DiagramType;
+  initialData?: Record<string, any>;
+  interactive?: boolean;
+  position?: 'front' | 'back' | 'both';
+  caption?: {
+    ko: string;
+    en: string;
+  };
+}
+
 export interface Flashcard {
   id: string;
   grade: number;         // 1 to 6
@@ -27,6 +46,7 @@ export interface Flashcard {
     ko: string;
     en: string;
   };
+  diagram?: DiagramConfig;
   review: SRSState;
 }
 

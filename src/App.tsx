@@ -39,6 +39,7 @@ import { Header } from './components/Header';
 import { DeckList } from './components/DeckList';
 import { StudyCard } from './components/StudyCard';
 import { SettingsModal } from './components/SettingsModal';
+import { MathLabModal } from './components/MathLabModal';
 import { getTranslation } from './i18n';
 import { CheckCircle2, RotateCcw, ArrowLeft } from 'lucide-react';
 
@@ -65,6 +66,7 @@ export function App() {
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
   const [syncMessage, setSyncMessage] = useState<string>('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isMathLabOpen, setIsMathLabOpen] = useState(false);
 
   // Active study session state
   const [activeDeck, setActiveDeck] = useState<Deck | null>(null);
@@ -805,6 +807,7 @@ export function App() {
         onToggleLanguage={handleToggleLanguage}
         onToggleTheme={handleToggleTheme}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenMathLab={() => setIsMathLabOpen(true)}
         onSync={handlePush}
       />
 
@@ -896,6 +899,13 @@ export function App() {
         onSetLanguage={handleSetLanguage}
         onSetTheme={handleSetTheme}
         onSetProvider={handleSetProvider}
+      />
+
+      {/* Visual Math Lab Modal */}
+      <MathLabModal
+        isOpen={isMathLabOpen}
+        language={language}
+        onClose={() => setIsMathLabOpen(false)}
       />
     </div>
   );
