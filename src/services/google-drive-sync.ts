@@ -7,7 +7,7 @@ export const DRIVE_APPDATA_SCOPE = 'https://www.googleapis.com/auth/drive.appdat
 // Can be customized via Vite environment variable VITE_GOOGLE_CLIENT_ID
 export const DEFAULT_GOOGLE_CLIENT_ID = 
   (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GOOGLE_CLIENT_ID) ||
-  '798154134907-u06ks4a5h3h6n1r9v52pvh2uof4o3d1q.apps.googleusercontent.com';
+  '712761103246-fu790i8uq1p7ipt4tos48nf7aoi21dcb.apps.googleusercontent.com';
 
 export class GoogleAuthError extends Error {
   constructor(message: string) {

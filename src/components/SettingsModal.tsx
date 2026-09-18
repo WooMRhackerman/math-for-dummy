@@ -146,127 +146,107 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
           )}
 
-          {/* 🌟 1. Primary: Google Drive / OneDrive Direct File Sync */}
-          <div className="rounded-2xl border-2 border-blue-500/30 dark:border-blue-500/40 bg-blue-50/40 dark:bg-blue-950/20 p-4 space-y-4">
+          {/* 🌟 1. Primary: Google Drive Web Cloud Sync (Web Interface / Chrome Auto-auth) */}
+          <div className="rounded-2xl border-2 border-blue-500/40 bg-gradient-to-br from-blue-50/70 to-indigo-50/40 dark:from-blue-950/40 dark:to-indigo-950/20 p-4 space-y-4 shadow-sm">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <FolderSync className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  {t('driveFileTitle')}
+                  <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+                    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.35 24 12 24z"/>
+                    <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+                    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.35 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                  </svg>
+                  <span>Google Drive 웹 클라우드 연동</span>
                 </h3>
                 <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
-                  {t('driveFileDesc')}
+                  크롬이나 스마트폰에 로그인된 구글 계정으로 웹 팝업에서 1초 만에 연동합니다. (윈도우 탐색기 0%)
                 </p>
               </div>
               <span className={`px-2 py-0.5 text-[10px] font-extrabold rounded-full shrink-0 ${
-                isFileConnected 
+                isGoogleConnected 
                   ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300' 
                   : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
               }`}>
-                {isFileConnected ? '연결됨' : '미연결'}
+                {isGoogleConnected ? '연동됨' : '미연결'}
               </span>
             </div>
 
-            {isCloudFileSupported ? (
-              isFileConnected ? (
-                <div className="bg-white dark:bg-slate-800 rounded-xl p-3.5 border border-slate-200 dark:border-slate-700 space-y-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2.5 overflow-hidden">
-                      <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-                        <HardDrive className="w-5 h-5" />
+            {isGoogleConnected ? (
+              <div className="bg-white dark:bg-slate-800 rounded-xl p-3.5 border border-slate-200 dark:border-slate-700 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2.5 overflow-hidden">
+                    {googleConfig?.userInfo?.picture ? (
+                      <img
+                        src={googleConfig.userInfo.picture}
+                        alt="Profile"
+                        className="w-9 h-9 rounded-full object-cover border border-slate-200 dark:border-slate-700 shrink-0"
+                      />
+                    ) : (
+                      <div className="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 font-bold flex items-center justify-center shrink-0 text-sm">
+                        {googleConfig?.userInfo?.name?.[0] || 'G'}
                       </div>
-                      <div className="truncate">
-                        <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                          {connectedFileName}
-                        </div>
-                        <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
-                          <Check className="w-3 h-3" />
-                          {t('autoSavedActive')}
-                        </div>
+                    )}
+                    <div className="truncate">
+                      <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                        {googleConfig?.userInfo?.name}
+                      </div>
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                        {googleConfig?.userInfo?.email}
                       </div>
                     </div>
-
-                    <button
-                      type="button"
-                      onClick={onDisconnectCloudFile}
-                      className="min-h-9 px-2.5 py-1 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg transition shrink-0"
-                    >
-                      {t('disconnectFile')}
-                    </button>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={onSaveToCloudFile}
-                      disabled={syncStatus === 'syncing'}
-                      className="min-h-10 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm disabled:opacity-50"
-                    >
-                      <UploadCloud className="w-3.5 h-3.5" />
-                      <span>지금 저장 (Save)</span>
-                    </button>
+                  <button
+                    type="button"
+                    onClick={onDisconnectGoogle}
+                    className="min-h-9 px-2.5 py-1 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg transition shrink-0"
+                  >
+                    연동 해제
+                  </button>
+                </div>
 
-                    <button
-                      type="button"
-                      onClick={onReloadCloudFile}
-                      disabled={syncStatus === 'syncing'}
-                      className="min-h-10 px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition disabled:opacity-50"
-                    >
-                      <RefreshCw className="w-3.5 h-3.5" />
-                      <span>{t('reloadFromFile')}</span>
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={onConnectCloudFile}
-                      className="min-h-12 px-3 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-sm"
-                    >
-                      <HardDrive className="w-4 h-4" />
-                      <span>{t('connectExistingFile')}</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={onCreateCloudFile}
-                      className="min-h-12 px-3 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold border border-slate-300 dark:border-slate-700 rounded-xl text-xs flex items-center justify-center gap-2 transition"
-                    >
-                      <PlusCircle className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                      <span>{t('createNewFile')}</span>
-                    </button>
-                  </div>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 text-center leading-normal">
-                    💡 파일 탐색기에서 내 컴퓨터의 <strong>Google Drive(G: 드라이브)</strong> 또는 <strong>OneDrive</strong> 폴더를 선택하세요.
-                  </p>
-                </div>
-              )
-            ) : (
-              <div className="bg-amber-50 dark:bg-amber-950/40 p-3 rounded-xl border border-amber-200 dark:border-amber-900/60 text-xs text-amber-800 dark:text-amber-300 space-y-2">
-                <div className="font-bold flex items-center gap-1.5">
-                  <AlertTriangle className="w-4 h-4 text-amber-600" />
-                  {t('browserNotSupportedTitle')}
-                </div>
-                <p className="text-[11px] leading-relaxed">
-                  {t('browserNotSupportedDesc')}
-                </p>
                 <div className="grid grid-cols-2 gap-2 pt-1">
                   <button
                     type="button"
-                    onClick={onExportJSON}
-                    className="min-h-9 px-3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-lg font-bold flex items-center justify-center gap-1"
+                    onClick={onPush}
+                    disabled={syncStatus === 'syncing'}
+                    className="min-h-10 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm disabled:opacity-50"
                   >
-                    <FileDown className="w-3.5 h-3.5" />
-                    {t('exportJson')}
+                    <UploadCloud className="w-3.5 h-3.5" />
+                    <span>지금 동기화 (Push)</span>
                   </button>
-                  <label className="min-h-9 px-3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-lg font-bold flex items-center justify-center gap-1 cursor-pointer">
-                    <FileUp className="w-3.5 h-3.5" />
-                    <span>{t('importJson')}</span>
-                    <input type="file" accept=".json" onChange={handleFileInputChange} className="hidden" />
-                  </label>
+
+                  <button
+                    type="button"
+                    onClick={onPull}
+                    disabled={syncStatus === 'syncing'}
+                    className="min-h-10 px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition disabled:opacity-50"
+                  >
+                    <DownloadCloud className="w-3.5 h-3.5" />
+                    <span>불러오기 (Pull)</span>
+                  </button>
                 </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={onConnectGoogle}
+                  disabled={syncStatus === 'syncing'}
+                  className="w-full min-h-12 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-bold shadow-sm transition flex items-center justify-center gap-2.5 cursor-pointer"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+                    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.35 24 12 24z"/>
+                    <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+                    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.35 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                  </svg>
+                  <span>Google 계정으로 계속 (웹 연동)</span>
+                </button>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 text-center leading-normal">
+                  💡 크롬/스마트폰에 로그인된 계정 선택 창이 브라우저 팝업으로 열립니다.
+                </p>
               </div>
             )}
           </div>
@@ -452,29 +432,83 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </button>
                   </form>
 
-                  {isGoogleConnected ? (
-                    <div className="flex items-center justify-between pt-1">
-                      <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">
-                        {googleConfig?.userInfo?.email} 연결됨
-                      </span>
-                      <button
-                        type="button"
-                        onClick={onDisconnectGoogle}
-                        className="text-xs text-rose-600 hover:underline"
-                      >
-                        연동 해제
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={onConnectGoogle}
-                      className="w-full min-h-10 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition"
-                    >
-                      {t('signInWithGoogle')}
-                    </button>
-                  )}
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                    현재 적용된 클라이언트 ID로 Google Identity Services 웹 로그인이 작동합니다.
+                  </p>
                 </div>
+
+                {/* Local Google Drive / OneDrive Folder Direct File Sync (Windows Explorer) */}
+                {isCloudFileSupported && (
+                  <div className="bg-slate-50 dark:bg-slate-800/60 rounded-xl p-3.5 border border-slate-200 dark:border-slate-700 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                        <FolderSync className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                        내 컴퓨터 로컬 폴더 직접 연동 (파일 탐색기)
+                      </h4>
+                      <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
+                        isFileConnected
+                          ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300'
+                          : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
+                      }`}>
+                        {isFileConnected ? '연결됨' : '미연결'}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-normal">
+                      컴퓨터에 설치된 Google Drive(G: 드라이브) 또는 OneDrive 동기화 폴더의 파일을 직접 연결할 수 있습니다.
+                    </p>
+
+                    {isFileConnected ? (
+                      <div className="flex items-center justify-between bg-white dark:bg-slate-800 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
+                          {connectedFileName}
+                        </span>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={onReloadCloudFile}
+                            className="text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:underline flex items-center gap-1"
+                          >
+                            <RefreshCw className="w-3 h-3" />
+                            새로고침
+                          </button>
+                          <button
+                            type="button"
+                            onClick={onSaveToCloudFile}
+                            className="text-[11px] font-bold text-blue-600 hover:underline"
+                          >
+                            저장
+                          </button>
+                          <button
+                            type="button"
+                            onClick={onDisconnectCloudFile}
+                            className="text-[11px] font-bold text-rose-600 hover:underline"
+                          >
+                            해제
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={onConnectCloudFile}
+                          className="flex-1 min-h-9 px-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 transition"
+                        >
+                          <HardDrive className="w-3.5 h-3.5" />
+                          기존 파일 열기
+                        </button>
+                        <button
+                          type="button"
+                          onClick={onCreateCloudFile}
+                          className="flex-1 min-h-9 px-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 transition"
+                        >
+                          <PlusCircle className="w-3.5 h-3.5 text-blue-600" />
+                          새 파일 생성
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Legacy GitHub Sync Config */}
                 <form onSubmit={handleSaveGitHub} className="space-y-3">

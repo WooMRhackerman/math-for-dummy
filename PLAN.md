@@ -65,17 +65,17 @@
 ---
 
 ## 🔄 Phase 4: Sync & Multi-Device Reliability
+- [x] **Google Drive Web Interface & Auto-Authentication (1-Click GIS Web Popup)**
+  - [x] Configured official Google Cloud OAuth 2.0 Web Client ID (`712761103246-...apps.googleusercontent.com`) directly in `src/services/google-drive-sync.ts`.
+  - [x] Enabled pure web-based Google Identity Services login popup (`accounts.google.com`) with zero Windows Explorer.
+  - [x] Real-time auto-saving directly to Google Drive AppData (`math_for_dummy_data.json`) on card reviews.
+  - [x] User profile presentation (avatar, name, email) with 1-click Push/Pull and disconnect.
 - [x] **Direct Google Drive / OneDrive Native File Sync (Zero-Token Option 2)**
   - [x] Implemented `src/services/cloud-drive-file.ts` with File System Access API (`pickCloudDriveFile`, `createCloudDriveFile`, `readDataFromFileHandle`, `writeDataToFileHandle`).
   - [x] Allows users to select or create a file directly in their local Google Drive (G: drive) or OneDrive sync folder.
-  - [x] Real-time background auto-saving on every flashcard review rating (`handleRateCard`) without requiring any developer console registration or API tokens.
+  - [x] Real-time background auto-saving on every flashcard review rating (`handleRateCard`).
   - [x] Persistent `FileSystemFileHandle` storage in IndexedDB so cloud connection survives browser reloads.
   - [x] Graceful detection and fallback guidance for non-Chromium browsers (Safari, Firefox).
-- [x] **Google Cloud / Drive Sync Transition (1-Click Frictionless Sync)**
-  - [x] Implemented Google Drive AppData API (`appDataFolder`) integration using Google Identity Services (GIS).
-  - [x] Designed modular `SyncManager` supporting Cloud File (primary), Google Drive (OAuth), GitHub PAT (secondary), and Local.
-  - [x] Connected user card in Settings with avatar, name, email, and 1-click disconnect.
-  - [x] One-click JSON backup export (`exportAsJSON`) and import/restore.
 - [ ] **Advanced Cloud Sync**
   - [ ] Visual Conflict Resolver: When conflict occurs, show side-by-side diff of local vs cloud data.
   - [ ] Offline Mutation Queue: Queue card reviews offline and auto-sync when network reconnects.

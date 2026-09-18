@@ -7,6 +7,19 @@
 
 ---
 
+### [2026-09-18] Google Drive Web Interface & Auto-Authentication (Real Web Client ID)
+- **Goal:** Replace OS Windows Explorer file picker with pure web-based Google Identity Services (GIS) auto-authentication using registered Google Cloud Web Client ID (`712761103246-...apps.googleusercontent.com`).
+- **Key Changes:**
+  - Integrated the verified Google OAuth 2.0 Web Client ID into `src/services/google-drive-sync.ts`.
+  - Re-established `google-drive` as the primary default sync provider in `SyncManager` and `App.tsx`.
+  - Redesigned `src/components/SettingsModal.tsx` placing the Google Web Sign-In card in the primary hero spot with 1-click Google web login popup, user profile card, push/pull actions, and auto-sync notice.
+  - Relocated the local Windows Explorer file system access tool to the collapsible Advanced Settings section.
+  - Added real-time auto-saving to Google Drive in `handleRateCard` in `src/App.tsx`.
+  - Updated `tests/sync-manager.test.ts` to assert `google-drive` default provider and multi-provider transitions.
+- **Verification:** All 24 unit tests passed (`npm test`). `npm run typecheck` and `npm run verify:curriculum` passed with 0 errors. Production bundle and PWA service worker generated successfully (`npm run build`).
+
+---
+
 ### [2026-09-18] Direct Google Drive & OneDrive Native File Sync (Zero OAuth / Zero Token)
 - **Goal:** Completely eliminate the developer Google Cloud Console registration and OAuth 401 error barrier by enabling direct, real-time file synchronization directly inside the user's local Google Drive (G: drive) or OneDrive sync folder.
 - **Key Changes:**

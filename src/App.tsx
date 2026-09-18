@@ -10,7 +10,8 @@ import {
 import { pullFromGitHub, pushToGitHub, SyncConflictError } from './services/github-sync';
 import { 
   requestGoogleAccessToken, fetchGoogleUserInfo, 
-  pullFromGoogleDrive, pushToGoogleDrive 
+  pullFromGoogleDrive, pushToGoogleDrive,
+  DEFAULT_GOOGLE_CLIENT_ID 
 } from './services/google-drive-sync';
 import {
   isFileSystemAccessSupported,
@@ -34,12 +35,12 @@ import { CheckCircle2, RotateCcw, ArrowLeft } from 'lucide-react';
 
 export function App() {
   const [data, setData] = useState<AppData | null>(null);
-  const [activeProvider, setActiveProvider] = useState<SyncProviderType>('cloud-file');
+  const [activeProvider, setActiveProvider] = useState<SyncProviderType>('google-drive');
   const [cloudFileHandle, setCloudFileHandle] = useState<FileSystemFileHandle | null>(null);
   const [connectedFileName, setConnectedFileName] = useState<string>('');
   const isCloudFileSupported = isFileSystemAccessSupported();
   const [googleConfig, setGoogleConfig] = useState<GoogleDriveConfig | null>(null);
-  const [googleClientId, setGoogleClientId] = useState<string>('');
+  const [googleClientId, setGoogleClientId] = useState<string>(DEFAULT_GOOGLE_CLIENT_ID);
   const [githubConfig, setGithubConfig] = useState<GitHubConfig>({
     token: '',
     owner: '',
@@ -123,14 +124,21 @@ export function App() {
 
       if (savedClientId) {
         setGoogleClientId(savedClientId);
+      } else {
+        setGoogleClientId(DEFAULT_GOOGLE_CLIENT_ID);
       }
 
-      if (savedHandle) {
+      if (savedGoogle) {
+        setGoogleConfig(savedGoogle);
+        setActiveProvider('google-drive');
+      } else if (savedHandle) {
         setCloudFileHandle(savedHandle);
         setConnectedFileName(savedFileName || savedHandle.name);
         setActiveProvider('cloud-file');
       } else if (savedProvider) {
         setActiveProvider(savedProvider);
+      } else {
+        setActiveProvider('google-drive');
       }
 
       if (savedLang) {
@@ -277,12 +285,13 @@ export function App() {
     await saveGoogleClientId(clientId);
   };
 
-  // Google Sign-In & Connect
+  // Google Sign-In & Connect (Web popup auto-auth)
   const handleConnectGoogle = async () => {
-    if (!googleClientId) {
+    const activeId = googleClientId?.trim() || DEFAULT_GOOGLE_CLIENT_ID;
+    if (!activeId) {
       setIsSettingsOpen(true);
       setSyncStatus('error');
-      setSyncMessage('Google OAuth Client ID를 먼저 입력하고 [ID 저장]을 눌러주세요.');
+      setSyncMessage('Google OAuth Client ID가 필요합니다.');
       return;
     }
 
@@ -584,6 +593,13 @@ export function App() {
     setData(newData);
     await saveAppData(newData);
     setActiveDeck(updatedDeck);
+
+    // Real-time auto-save to Google Drive if active
+    if (activeProvider === 'google-drive' && googleConfig && Date.now() < googleConfig.expiresAt) {
+      pushToGoogleDrive(googleConfig, newData).catch((err) => {
+        console.warn('Real-time Google Drive auto-save failed:', err);
+      });
+    }
 
     // Real-time auto-save to connected cloud drive file if active
     if (activeProvider === 'cloud-file' && cloudFileHandle) {

@@ -5,7 +5,7 @@ import { readDataFromFileHandle, writeDataToFileHandle } from './cloud-drive-fil
 import { loadAppData, saveAppData } from './storage';
 
 export class SyncManager {
-  private activeProvider: SyncProviderType = 'cloud-file';
+  private activeProvider: SyncProviderType = 'google-drive';
   private cloudFileHandle: FileSystemFileHandle | null = null;
   private cloudFileName = '';
   private googleConfig: GoogleDriveConfig | null = null;
