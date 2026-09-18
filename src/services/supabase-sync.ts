@@ -124,9 +124,13 @@ export async function signUpWithEmail(
   pass: string
 ): Promise<{ user: User | null; session: Session | null }> {
   const client = getSupabaseClient();
+  const redirectTo = typeof window !== 'undefined' ? window.location.origin + window.location.pathname : undefined;
   const { data, error } = await client.auth.signUp({
     email: email.trim(),
-    password: pass
+    password: pass,
+    options: {
+      emailRedirectTo: redirectTo
+    }
   });
 
   if (error) {

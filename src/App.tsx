@@ -415,8 +415,8 @@ export function App() {
   const handleSignUpSupabase = async (email: string, pass: string) => {
     setSyncStatus('syncing');
     setSyncMessage(t('supabaseConnecting'));
-    const { user } = await signUpWithEmail(email, pass);
-    if (user) {
+    const { user, session } = await signUpWithEmail(email, pass);
+    if (user && session) {
       const suUser: SupabaseUser = { id: user.id, email: user.email || '' };
       setSupabaseUser(suUser);
       setActiveProvider('supabase');
@@ -431,6 +431,9 @@ export function App() {
       setSyncStatus('success');
       setSyncMessage(`회원가입 완료 및 클라우드 연동됨 (${user.email})`);
       setTimeout(() => setSyncStatus('idle'), 3500);
+    } else if (user) {
+      setSyncStatus('idle');
+      setSyncMessage('이메일 확인 메일이 발송되었습니다. 인증 후 로그인해주세요.');
     }
   };
 
