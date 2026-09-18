@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { 
   X, Key, UploadCloud, DownloadCloud, BookOpen, Check, AlertTriangle, 
-  Sun, Moon, Monitor, ChevronDown, ChevronUp, LogOut, FileDown, FileUp, Database
+  Sun, Moon, Monitor, ChevronDown, ChevronUp, LogOut, FileDown, FileUp, Database,
+  HelpCircle, ExternalLink
 } from 'lucide-react';
 import { GitHubConfig, GoogleDriveConfig, Language, SyncProviderType, SyncStatus, Theme } from '../types';
 import { getTranslation } from '../i18n';
@@ -12,11 +13,13 @@ interface SettingsModalProps {
   theme: Theme;
   config: GitHubConfig;
   googleConfig: GoogleDriveConfig | null;
+  googleClientId: string;
   activeProvider: SyncProviderType;
   syncStatus: SyncStatus;
   syncMessage: string;
   onClose: () => void;
   onSaveConfig: (config: GitHubConfig) => void;
+  onSaveGoogleClientId: (clientId: string) => void;
   onConnectGoogle: () => void;
   onDisconnectGoogle: () => void;
   onPush: () => void;
@@ -35,11 +38,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   theme,
   config,
   googleConfig,
+  googleClientId,
   activeProvider,
   syncStatus,
   syncMessage,
   onClose,
   onSaveConfig,
+  onSaveGoogleClientId,
   onConnectGoogle,
   onDisconnectGoogle,
   onPush,
@@ -58,10 +63,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
+  const [clientIdInput, setClientIdInput] = useState(googleClientId);
+  const [savedClientIdSuccess, setSavedClientIdSuccess] = useState(false);
+  const [showGoogleGuide, setShowGoogleGuide] = useState(false);
+
   if (!isOpen) return null;
 
   const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language, key);
   const isGoogleConnected = !!(googleConfig && Date.now() < googleConfig.expiresAt);
+
+  const handleSaveClientId = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSaveGoogleClientId(clientIdInput.trim());
+    setSavedClientIdSuccess(true);
+    setTimeout(() => setSavedClientIdSuccess(false), 2000);
+  };
 
   const handleSaveGitHub = (e: React.FormEvent) => {
     e.preventDefault();
@@ -134,6 +150,61 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               }`}>
                 {isGoogleConnected ? '연결됨' : '미연결'}
               </span>
+            </div>
+
+            {/* Google Client ID Configuration */}
+            <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-700/60">
+              <div className="flex items-center justify-between">
+                <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                  {t('googleClientIdLabel')}
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowGoogleGuide(!showGoogleGuide)}
+                  className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                >
+                  <HelpCircle className="w-3.5 h-3.5" />
+                  {t('googleSetupGuide')}
+                </button>
+              </div>
+
+              {/* 4-Step Visual Guide */}
+              {showGoogleGuide && (
+                <div className="p-3 bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 rounded-xl text-xs space-y-2 text-slate-700 dark:text-slate-300">
+                  <div className="font-bold text-blue-900 dark:text-blue-200 flex items-center gap-1.5">
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    Google Cloud Console 클라이언트 ID 발급 방법 (100% 무료):
+                  </div>
+                  <ol className="list-decimal list-inside space-y-1 text-[11px] leading-relaxed">
+                    <li><a href="https://console.cloud.google.com/" target="_blank" rel="noreferrer" className="text-blue-600 dark:text-blue-400 underline font-bold">Google Cloud Console</a> 접속 후 새 프로젝트 생성</li>
+                    <li><strong>API 및 서비스</strong> &gt; <strong>라이브러리</strong> &gt; <strong>Google Drive API</strong> 검색 후 [사용] 클릭</li>
+                    <li><strong>사용자 인증 정보</strong> &gt; <strong>OAuth 클라이언트 ID 만들기</strong>:
+                      <ul className="list-disc list-inside pl-3 pt-0.5 space-y-0.5 text-[10px] text-slate-600 dark:text-slate-400">
+                        <li>유형: <strong>웹 애플리케이션</strong></li>
+                        <li>승인된 JavaScript 출처: <code className="bg-white dark:bg-slate-900 px-1 py-0.5 rounded font-mono">https://woomrhackerman.github.io</code> 및 <code className="bg-white dark:bg-slate-900 px-1 py-0.5 rounded font-mono">http://localhost:5173</code></li>
+                      </ul>
+                    </li>
+                    <li>발급된 <strong>클라이언트 ID</strong>(<code className="font-mono text-[10px]">.apps.googleusercontent.com</code>)를 복사하여 아래에 붙여넣고 [ID 저장]을 누르세요!</li>
+                  </ol>
+                </div>
+              )}
+
+              <form onSubmit={handleSaveClientId} className="flex gap-2">
+                <input
+                  type="text"
+                  value={clientIdInput}
+                  onChange={(e) => setClientIdInput(e.target.value)}
+                  placeholder={t('googleClientIdPlaceholder')}
+                  className="flex-1 min-h-10 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button
+                  type="submit"
+                  className="min-h-10 px-3 bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 text-white font-bold text-xs rounded-lg transition shrink-0 flex items-center gap-1"
+                >
+                  {savedClientIdSuccess ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : null}
+                  {savedClientIdSuccess ? '저장됨' : t('saveClientId')}
+                </button>
+              </form>
             </div>
 
             {isGoogleConnected ? (

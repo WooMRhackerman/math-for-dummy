@@ -57,5 +57,10 @@ export const ko = {
   advancedSettings: "고급 설정 (GitHub & 로컬 파일 백업)",
   exportJson: "JSON 파일로 백업 다운로드",
   importJson: "JSON 백업 파일 불러오기",
-  localBackup: "로컬 파일 백업"
+  localBackup: "로컬 파일 백업",
+  googleClientIdLabel: "Google OAuth Client ID",
+  googleClientIdPlaceholder: "xxxx.apps.googleusercontent.com",
+  googleClientIdHelp: "Google Cloud Console에서 발급받은 웹 애플리케이션 클라이언트 ID를 입력하세요.",
+  googleSetupGuide: "무료 2분 설정 가이드",
+  saveClientId: "ID 저장"
 };

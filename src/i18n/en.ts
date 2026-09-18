@@ -57,5 +57,10 @@ export const en = {
   advancedSettings: "Advanced Settings (GitHub & Local File Backup)",
   exportJson: "Download JSON Backup",
   importJson: "Restore from JSON Backup",
-  localBackup: "Local File Backup"
+  localBackup: "Local File Backup",
+  googleClientIdLabel: "Google OAuth Client ID",
+  googleClientIdPlaceholder: "xxxx.apps.googleusercontent.com",
+  googleClientIdHelp: "Enter the Web Application Client ID from Google Cloud Console.",
+  googleSetupGuide: "Free 2-Min Setup Guide",
+  saveClientId: "Save ID"
 };

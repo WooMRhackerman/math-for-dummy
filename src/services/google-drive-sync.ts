@@ -82,8 +82,13 @@ export async function loadGoogleIdentityScript(): Promise<void> {
  * Initiates the Google OAuth 2.0 Token Flow via GIS popup.
  */
 export async function requestGoogleAccessToken(
-  clientId = DEFAULT_GOOGLE_CLIENT_ID
+  clientId?: string
 ): Promise<{ accessToken: string; expiresAt: number }> {
+  const activeClientId = clientId?.trim() || DEFAULT_GOOGLE_CLIENT_ID;
+  if (!activeClientId) {
+    throw new GoogleAuthError('GOOGLE_CLIENT_ID_REQUIRED');
+  }
+
   await loadGoogleIdentityScript();
 
   const oauth2 = window.google?.accounts?.oauth2;
@@ -94,7 +99,7 @@ export async function requestGoogleAccessToken(
   return new Promise((resolve, reject) => {
     try {
       const client = oauth2.initTokenClient({
-        client_id: clientId,
+        client_id: activeClientId,
         scope: DRIVE_APPDATA_SCOPE,
         callback: (response: GoogleTokenResponse) => {
           if (response.error) {

@@ -4,6 +4,7 @@ import { AppData, GitHubConfig, GoogleDriveConfig, Language, SyncProviderType, T
 const APP_DATA_KEY = 'math_for_dummy_data';
 const GITHUB_CONFIG_KEY = 'math_for_dummy_gh_config';
 const GOOGLE_CONFIG_KEY = 'math_for_dummy_google_config';
+const GOOGLE_CLIENT_ID_KEY = 'math_for_dummy_google_client_id';
 const SYNC_PROVIDER_KEY = 'math_for_dummy_active_sync_provider';
 const LANGUAGE_KEY = 'math_for_dummy_language';
 const THEME_KEY = 'math_for_dummy_theme';
@@ -73,6 +74,23 @@ export async function clearGoogleConfig(): Promise<void> {
     await del(GOOGLE_CONFIG_KEY);
   } catch (err) {
     console.error('Failed to clear GoogleDriveConfig:', err);
+  }
+}
+
+export async function loadGoogleClientId(): Promise<string> {
+  try {
+    const id = await get<string>(GOOGLE_CLIENT_ID_KEY);
+    return id || '';
+  } catch {
+    return '';
+  }
+}
+
+export async function saveGoogleClientId(clientId: string): Promise<void> {
+  try {
+    await set(GOOGLE_CLIENT_ID_KEY, clientId.trim());
+  } catch (err) {
+    console.error('Failed to save Google Client ID:', err);
   }
 }
 

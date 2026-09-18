@@ -3,6 +3,7 @@ import { AppData, Deck, Flashcard, GitHubConfig, GoogleDriveConfig, Language, Sy
 import { 
   loadAppData, saveAppData, loadGitHubConfig, saveGitHubConfig, 
   loadGoogleConfig, saveGoogleConfig, clearGoogleConfig,
+  loadGoogleClientId, saveGoogleClientId,
   loadActiveSyncProvider, saveActiveSyncProvider,
   loadLanguage, saveLanguage, loadTheme, saveTheme 
 } from './services/storage';
@@ -25,6 +26,7 @@ export function App() {
   const [data, setData] = useState<AppData | null>(null);
   const [activeProvider, setActiveProvider] = useState<SyncProviderType>('google-drive');
   const [googleConfig, setGoogleConfig] = useState<GoogleDriveConfig | null>(null);
+  const [googleClientId, setGoogleClientId] = useState<string>('');
   const [githubConfig, setGithubConfig] = useState<GitHubConfig>({
     token: '',
     owner: '',
@@ -67,10 +69,11 @@ export function App() {
   // Initialize app state from IndexedDB
   useEffect(() => {
     async function init() {
-      const [savedData, savedConfig, savedGoogle, savedProvider, savedLang, savedTheme] = await Promise.all([
+      const [savedData, savedConfig, savedGoogle, savedClientId, savedProvider, savedLang, savedTheme] = await Promise.all([
         loadAppData(),
         loadGitHubConfig(),
         loadGoogleConfig(),
+        loadGoogleClientId(),
         loadActiveSyncProvider(),
         loadLanguage(),
         loadTheme()
@@ -91,6 +94,10 @@ export function App() {
 
       if (savedGoogle) {
         setGoogleConfig(savedGoogle);
+      }
+
+      if (savedClientId) {
+        setGoogleClientId(savedClientId);
       }
 
       if (savedProvider) {
@@ -139,12 +146,24 @@ export function App() {
     githubConfig
   });
 
+  const handleSaveGoogleClientId = async (clientId: string) => {
+    setGoogleClientId(clientId);
+    await saveGoogleClientId(clientId);
+  };
+
   // Google Sign-In & Connect
   const handleConnectGoogle = async () => {
+    if (!googleClientId) {
+      setIsSettingsOpen(true);
+      setSyncStatus('error');
+      setSyncMessage('Google OAuth Client ID를 먼저 입력하고 [ID 저장]을 눌러주세요.');
+      return;
+    }
+
     try {
       setSyncStatus('syncing');
       setSyncMessage('Google 계정 인증 중...');
-      const tokenResult = await requestGoogleAccessToken();
+      const tokenResult = await requestGoogleAccessToken(googleClientId);
       const userInfo = await fetchGoogleUserInfo(tokenResult.accessToken);
 
       const newGoogleConfig: GoogleDriveConfig = {
@@ -485,11 +504,13 @@ export function App() {
         theme={theme}
         config={githubConfig}
         googleConfig={googleConfig}
+        googleClientId={googleClientId}
         activeProvider={activeProvider}
         syncStatus={syncStatus}
         syncMessage={syncMessage}
         onClose={() => setIsSettingsOpen(false)}
         onSaveConfig={handleSaveConfig}
+        onSaveGoogleClientId={handleSaveGoogleClientId}
         onConnectGoogle={handleConnectGoogle}
         onDisconnectGoogle={handleDisconnectGoogle}
         onPush={handlePush}
